@@ -1,0 +1,5 @@
+syntax = "proto3";
+
+package conversation.v1;
+
+option go_package = "github.com/zhmlst/assistant/conversation/pkg/conversation/v1;conversationV1";
