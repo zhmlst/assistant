@@ -5,6 +5,7 @@ go 1.26.1
 replace github.com/zhmlst/assistant/go => ../go
 
 require (
+	github.com/caarlos0/env/v11 v11.4.0
 	github.com/zhmlst/assistant/go v0.0.0-00010101000000-000000000000
 	google.golang.org/protobuf v1.36.11
 )
