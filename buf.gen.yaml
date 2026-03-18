@@ -1,6 +1,6 @@
 version: v2
 plugins:
   - local: protoc-gen-go
-    out: conversaion/pkg
+    out: pkg
     opt:
       - paths=source_relative
