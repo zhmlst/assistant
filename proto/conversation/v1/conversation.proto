@@ -1,5 +1,160 @@
 syntax = "proto3";
 
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/field_mask.proto";
+
 package conversation.v1;
 
-option go_package = "github.com/zhmlst/assistant/conversation/pkg/conversation/v1;conversationV1";
+option go_package = "github.com/zhmlst/assistant/conversation/pkg/conversation/v1;conversationv1";
+
+enum Role {
+  ROLE_UNSPECIFIED = 0;
+  ROLE_ASSISTANT = 1;
+  ROLE_SYSTEM = 2;
+  ROLE_USER = 3;
+}
+
+message Conversation {
+  message Preferences {
+    // TODO: add generation preferences
+  }
+
+  bytes id = 1;
+  string title = 2;
+  bytes user_id = 3;
+  bytes root_message_id = 4;
+  bytes active_message_id = 5;
+  Preferences preferences = 6;
+  google.protobuf.Timestamp create_time = 7;
+  google.protobuf.Timestamp update_time = 8;
+  google.protobuf.Timestamp delete_time = 9;
+}
+
+message GetConversationRequest {
+  bytes id = 1;
+}
+
+message ListConversationsRequest {
+  int32 page_size = 1;
+  bytes page_token = 2;
+  string filter = 3;
+  string order_by = 4;
+}
+
+message ListConversationsResponse {
+  repeated Conversation conversations = 1;
+  bytes next_page_token = 2;
+}
+
+message CreateConversationRequest {
+  Message root_message = 1;
+  string title = 2;
+}
+
+message UpdateConversationRequest {
+  bytes conversation_id = 1;
+  Conversation conversation = 2;
+  google.protobuf.FieldMask field_mask = 3;
+}
+
+message DeleteConversationRequest {
+  bytes id = 1;
+}
+
+service ConversationService {
+  rpc GetConversation(GetConversationRequest) returns (Conversation);
+  rpc ListConversations(ListConversationsRequest) returns (ListConversationsResponse);
+  rpc CreateConversation(CreateConversationRequest) returns (Conversation);
+  rpc UpdateConversation(UpdateConversationRequest) returns (Conversation);
+  rpc DeleteConversation(DeleteConversationRequest) returns (google.protobuf.Empty);
+}
+
+message Message {
+  bytes id = 1;
+  bytes parent_id = 2;
+  bytes conversation_id = 3;
+  Role role = 4;
+  string text = 5;
+  google.protobuf.Timestamp create_time = 6;
+}
+
+message GetMessageRequest {
+  bytes id = 1;
+}
+
+message ListMessagesRequest {
+  bytes conversation_id = 1;
+  int32 page_size = 2;
+  bytes page_token = 3;
+  string filter = 4;
+  string order_by = 5;
+}
+
+message ListMessagesResponse {
+  repeated Message messages = 1;
+  bytes next_page_token = 2;
+}
+
+message CreateMessageRequest {
+  bytes parent_id = 1;
+  bytes conversation_id = 2;
+  Role role = 3;
+  string text = 4;
+}
+
+message DeleteMessageRequest {
+  bytes id = 1;
+  bool force = 2;
+}
+
+message GetHistoryRequest {
+  bytes conversation_id = 1;
+  bytes anchor_message_id = 2;
+}
+
+message GetHistoryChunkRequest {
+  bytes conversation_id = 1;
+  bytes anchor_message_id = 2;
+  int32 limit = 3;
+  int32 breadth = 4;
+}
+
+message GetHistoryChunkResponse {
+  message Entry {
+    repeated Message variants = 1;
+    int32 active_variant_index = 2;
+    int32 total_variants = 3;
+  }
+  repeated Entry entries = 1;
+}
+
+message ListVariantsRequest {
+  bytes parent_message_id = 1;
+  int32 breadth = 2;
+  bytes page_token = 3;
+}
+
+message ListVariantsResponse {
+  repeated Message variants = 1;
+  bytes next_page_token = 2;
+}
+
+message SelectVariantRequest {
+  bytes conversation_id = 1;
+  bytes parent_message_id = 2;
+  bytes variant_message_id = 3;
+}
+
+service MessageService {
+  rpc GetMessage(GetMessageRequest) returns (Message);
+  rpc ListMessages(ListMessagesRequest) returns (ListMessagesResponse);
+  rpc CreateMessage(CreateMessageRequest) returns (Message);
+  rpc DeleteMessage(DeleteMessageRequest) returns (google.protobuf.Empty);
+
+  rpc GetHistory(GetHistoryRequest) returns (stream Message);
+  rpc GetHistoryChunk(GetHistoryChunkRequest) returns (GetHistoryChunkResponse);
+  rpc ListVariants(ListVariantsRequest) returns (ListVariantsResponse);
+  rpc SelectVariant(SelectVariantRequest) returns (google.protobuf.Empty);
+}
+
