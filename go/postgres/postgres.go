@@ -3,22 +3,22 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"time"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"net"
 	"net/url"
 	"strconv"
+	"time"
 )
 
 type Config struct {
-	DSN  string
-	Host string
-	Port uint
-	User string
-	Pass string
-	Args url.Values
+	DSN           string
+	Host          string
+	Port          uint
+	User          string
+	Pass          string
+	Args          url.Values
 	RetryInterval time.Duration
 }
 
@@ -49,20 +49,16 @@ func New(ctx context.Context, cfg *Config) (Pool, error) {
 
 	timer := time.NewTimer(cfg.RetryInterval)
 	defer timer.Stop()
-	for {
-		if err := pool.Ping(ctx); err == nil {
-			return Pool{Pool: pool}, nil
-		}
-
+	for err := pool.Ping(ctx); err != nil; err = pool.Ping(ctx) {
 		timer.Reset(cfg.RetryInterval)
 		select {
 		case <-ctx.Done():
-			return Pool{}, ctx.Err()
+			return Pool{}, fmt.Errorf("pool ping: %w", err)
 		case <-timer.C:
 		}
 	}
+	return Pool{Pool: pool}, nil
 }
-
 
 type key struct{}
 
