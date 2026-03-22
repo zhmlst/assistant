@@ -45,7 +45,7 @@ func (s *Service) CreateMessage(
 	if parentID == domain.NilHash {
 		userID, ok := s.userIDProvider.UserID(ctx)
 		if !ok {
-			return nil, fmt.Errorf("cannot create conversation for unknown user")
+			return nil, domain.ErrInvalidInput.New("cannot create conversation for unknown user")
 		}
 
 		cnv, err := domain.NewConversation(userID, text[:min(16, len(text))])
