@@ -8,6 +8,37 @@ import (
 	"time"
 )
 
+type Preferences struct {
+}
+
+func DefaultPreferences() *Preferences {
+	return &Preferences{}
+}
+
+type Conversation struct {
+	ID          uuid.UUID
+	UserID      uuid.UUID
+	Title       string
+	Preferences Preferences
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+}
+
+func NewConversation(
+	userID uuid.UUID,
+	title string,
+) (*Conversation, error) {
+	now := time.Now()
+	return &Conversation{
+		ID:          uuid.New(),
+		UserID:      userID,
+		Title:       title,
+		Preferences: *DefaultPreferences(),
+		CreatedAt:   now,
+		UpdatedAt:   now,
+	}, nil
+}
+
 type Role uint8
 
 const (
