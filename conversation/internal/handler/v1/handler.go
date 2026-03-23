@@ -145,7 +145,7 @@ func (h *Handler) DeleteMessage(ctx context.Context, req *conversationv1.DeleteM
 		return nil, fmt.Errorf("parse message id: %w", err)
 	}
 
-	if err := h.service.DeleteMessage(ctx, conversationID, id); err != nil {
+	if err := h.service.DeleteMessage(ctx, id, conversationID); err != nil {
 		return nil, err
 	}
 
