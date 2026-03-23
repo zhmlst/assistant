@@ -70,7 +70,7 @@ func run() (cause error) {
 	conversationv1.RegisterMessageServiceServer(server, handlerV1)
 	conversationv1.RegisterConversationServiceServer(server, handlerV1)
 
-	addr, err := net.ResolveTCPAddr("tcp", cfg.Postgres.Host)
+	addr, err := net.ResolveTCPAddr("tcp", cfg.GRPC.Addr)
 	if err != nil {
 		return fmt.Errorf("resolve tcp addr: %w", err)
 	}
