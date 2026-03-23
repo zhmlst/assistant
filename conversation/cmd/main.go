@@ -2,12 +2,18 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	conversationv1 "github.com/zhmlst/assistant/conversation/pkg/conversation/v1"
+	handlerv1 "github.com/zhmlst/assistant/conversation/internal/handler/v1"
+	"github.com/zhmlst/assistant/conversation/internal/service"
 	"github.com/caarlos0/env/v11"
 	"github.com/zhmlst/assistant/go/logger"
 	"github.com/zhmlst/assistant/go/postgres"
 	"net/url"
+	"google.golang.org/grpc"
 	"os"
+	"net"
 	"os/signal"
 	"reflect"
 	"syscall"
@@ -17,9 +23,12 @@ import (
 type Config struct {
 	Postgres postgres.Config `envPrefix:"POSTGRES_"`
 	Logger   logger.Config   `envPrefix:"LOGGER_"`
+	GRPC struct {
+		Addr string
+	} `envPrefix:"GRPC_"`
 }
 
-func run() error {
+func run() (cause error) {
 	ctx, cancel := signal.NotifyContext(
 		context.Background(),
 		syscall.SIGINT,
@@ -51,15 +60,38 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("postgres new: %w", err)
 	}
-	_ = pgpool
 
 	lgr := logger.New(&cfg.Logger)
+
+	service := service.New(pgpool, nil, nil, nil)
+
+	server := grpc.NewServer()
+	handlerV1 := handlerv1.New(service)
+	conversationv1.RegisterMessageServiceServer(server, handlerV1)
+	conversationv1.RegisterConversationServiceServer(server, handlerV1)
+
+	addr, err := net.ResolveTCPAddr("tcp", cfg.Postgres.Host)
+	if err != nil {
+		return fmt.Errorf("resolve tcp addr: %w", err)
+	}
+
+	lis, err := net.ListenTCP("tcp", addr)
+	if err != nil {
+		return fmt.Errorf("listen tcp: %w", err)
+	}
+
+	go func () {
+		if err := server.Serve(lis); errors.Is(err, grpc.ErrServerStopped) {
+			cause = err
+		}
+	}()
+	defer server.GracefulStop()
 
 	lgr.Info("started")
 	<-ctx.Done()
 	lgr.Info("terminated")
 
-	return nil
+	return
 }
 
 func main() {

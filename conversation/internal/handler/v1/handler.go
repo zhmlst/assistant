@@ -24,8 +24,8 @@ type Service interface {
 
 	DeleteMessage (
 		ctx context.Context,
-		conversationID uuid.UUID,
 		id domain.Hash,
+		conversationID uuid.UUID,
 	) error
 }
 

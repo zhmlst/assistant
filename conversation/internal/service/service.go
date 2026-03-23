@@ -34,12 +34,16 @@ type Service struct {
 }
 
 func New(
+	transactor Transactor,
 	messages Messages,
 	conversations Conversations,
+	userIDProvider UserIDProvider,
 ) *Service {
 	return &Service{
-		messages:      messages,
-		conversations: conversations,
+		transactor:     transactor,
+		messages:       messages,
+		conversations:  conversations,
+		userIDProvider: userIDProvider,
 	}
 }
 
@@ -91,7 +95,7 @@ func (s *Service) DeleteMessage(
 		return fmt.Errorf("get message: %w", err)
 	}
 
-	return s.transactor.Wrap(ctx, func(ctx context.Context) error  {
+	return s.transactor.Wrap(ctx, func(ctx context.Context) error {
 		if msg.ParentID == domain.NilHash {
 			if err := s.conversations.Delete(ctx, msg.ConversationID); err != nil {
 				return fmt.Errorf("delete conversation: %w", err)
