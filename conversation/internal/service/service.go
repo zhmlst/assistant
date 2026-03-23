@@ -7,12 +7,19 @@ import (
 	"github.com/zhmlst/assistant/conversation/internal/domain"
 )
 
+type Transactor interface {
+	Wrap(context.Context, func(context.Context) error) error
+}
+
 type Conversations interface {
 	Store(ctx context.Context, cnv *domain.Conversation) error
+	Delete(ctx context.Context, id uuid.UUID) error
 }
 
 type Messages interface {
+	ByID(ctx context.Context, id domain.Hash) (*domain.Message, error)
 	Store(ctx context.Context, msg *domain.Message) error
+	Delete(ctx context.Context, id domain.Hash) error
 }
 
 type UserIDProvider interface {
@@ -20,6 +27,7 @@ type UserIDProvider interface {
 }
 
 type Service struct {
+	transactor     Transactor
 	messages       Messages
 	conversations  Conversations
 	userIDProvider UserIDProvider
@@ -71,4 +79,29 @@ func (s *Service) CreateMessage(
 	}
 
 	return msg, nil
+}
+
+func (s *Service) DeleteMessage(
+	ctx context.Context,
+	id domain.Hash,
+	conversationID uuid.UUID,
+) error {
+	msg, err := s.messages.ByID(ctx, id)
+	if err != nil {
+		return fmt.Errorf("get message: %w", err)
+	}
+
+	return s.transactor.Wrap(ctx, func(ctx context.Context) error  {
+		if msg.ParentID == domain.NilHash {
+			if err := s.conversations.Delete(ctx, msg.ConversationID); err != nil {
+				return fmt.Errorf("delete conversation: %w", err)
+			}
+		}
+
+		if err := s.messages.Delete(ctx, msg.ID); err != nil {
+			return fmt.Errorf("delete message: %w", err)
+		}
+
+		return nil
+	})
 }

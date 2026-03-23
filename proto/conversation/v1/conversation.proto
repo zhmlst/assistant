@@ -91,7 +91,8 @@ message CreateMessageRequest {
 
 message DeleteMessageRequest {
   bytes id = 1;
-  bool force = 2;
+  bytes conversation_id = 2;
+  bool force = 3;
 }
 
 message GetHistoryRequest {

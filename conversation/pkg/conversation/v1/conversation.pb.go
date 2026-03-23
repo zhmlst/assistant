@@ -709,11 +709,12 @@ func (x *CreateMessageRequest) GetText() string {
 }
 
 type DeleteMessageRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            []byte                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Force         bool                   `protobuf:"varint,2,opt,name=force,proto3" json:"force,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Id             []byte                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	ConversationId []byte                 `protobuf:"bytes,2,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
+	Force          bool                   `protobuf:"varint,3,opt,name=force,proto3" json:"force,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *DeleteMessageRequest) Reset() {
@@ -749,6 +750,13 @@ func (*DeleteMessageRequest) Descriptor() ([]byte, []int) {
 func (x *DeleteMessageRequest) GetId() []byte {
 	if x != nil {
 		return x.Id
+	}
+	return nil
+}
+
+func (x *DeleteMessageRequest) GetConversationId() []byte {
+	if x != nil {
+		return x.ConversationId
 	}
 	return nil
 }
@@ -1247,10 +1255,11 @@ const file_conversation_v1_conversation_proto_rawDesc = "" +
 	"\tparent_id\x18\x01 \x01(\fR\bparentId\x12'\n" +
 	"\x0fconversation_id\x18\x02 \x01(\fR\x0econversationId\x12)\n" +
 	"\x04role\x18\x03 \x01(\x0e2\x15.conversation.v1.RoleR\x04role\x12\x12\n" +
-	"\x04text\x18\x04 \x01(\tR\x04text\"<\n" +
+	"\x04text\x18\x04 \x01(\tR\x04text\"e\n" +
 	"\x14DeleteMessageRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\fR\x02id\x12\x14\n" +
-	"\x05force\x18\x02 \x01(\bR\x05force\"h\n" +
+	"\x02id\x18\x01 \x01(\fR\x02id\x12'\n" +
+	"\x0fconversation_id\x18\x02 \x01(\fR\x0econversationId\x12\x14\n" +
+	"\x05force\x18\x03 \x01(\bR\x05force\"h\n" +
 	"\x11GetHistoryRequest\x12'\n" +
 	"\x0fconversation_id\x18\x01 \x01(\fR\x0econversationId\x12*\n" +
 	"\x11anchor_message_id\x18\x02 \x01(\fR\x0fanchorMessageId\"\x9d\x01\n" +

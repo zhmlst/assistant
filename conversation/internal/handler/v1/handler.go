@@ -21,6 +21,12 @@ type Service interface {
 		role domain.Role,
 		text string,
 	) (*domain.Message, error)
+
+	DeleteMessage (
+		ctx context.Context,
+		conversationID uuid.UUID,
+		id domain.Hash,
+	) error
 }
 
 func roleFromProto(r conversationv1.Role) (domain.Role, error) {
@@ -136,7 +142,21 @@ func (h *Handler) CreateMessage(
 }
 
 func (h *Handler) DeleteMessage(ctx context.Context, req *conversationv1.DeleteMessageRequest) (*emptypb.Empty, error) {
-	return nil, status.Error(codes.Unimplemented, "method DeleteMessage not implemented")
+	conversationID , err := uuid.ParseBytes(req.ConversationId)
+	if err != nil {
+		return nil, fmt.Errorf("parse conversation id: %w", err)
+	}
+
+	id, err := hashFromBytes(req.Id)
+	if err != nil {
+		return nil, fmt.Errorf("parse message id: %w", err)
+	}
+
+	if err := h.service.DeleteMessage(ctx, conversationID, id); err != nil {
+		return nil, err
+	}
+
+	return &emptypb.Empty{}, nil
 }
 
 func (h *Handler) GetHistory(*conversationv1.GetHistoryRequest, grpc.ServerStreamingServer[conversationv1.Message]) error {
