@@ -6,6 +6,7 @@ import (
 	"hash"
 	"sync"
 	"time"
+	"fmt"
 )
 
 type Preferences struct {
@@ -51,6 +52,13 @@ const (
 type Hash [32]byte
 
 var NilHash Hash
+
+func HashFromBytes(b []byte) (Hash, error) {
+    if len(b) < len(NilHash) {
+        return NilHash, fmt.Errorf("invalid hash length %d", len(b))
+    }
+    return Hash(b), nil
+}
 
 type Message struct {
 	ID             Hash

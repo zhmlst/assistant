@@ -55,13 +55,6 @@ func roleToProto(r domain.Role) (conversationv1.Role, error) {
     }
 }
 
-func hashFromBytes(b []byte) (domain.Hash, error) {
-    if len(b) < len(domain.NilHash) {
-        return domain.NilHash, fmt.Errorf("invalid hash length %d", len(b))
-    }
-    return domain.Hash(b), nil
-}
-
 type Handler struct {
 	conversationv1.UnimplementedMessageServiceServer
 	conversationv1.ConversationServiceServer
@@ -110,7 +103,7 @@ func (h *Handler) CreateMessage(
 		return nil, fmt.Errorf("invalid role: %w", err)
 	}
 
-	parentID, err := hashFromBytes(req.ParentId)
+	parentID, err := domain.HashFromBytes(req.ParentId)
 	if err != nil {
 		return nil, fmt.Errorf("invalid parent id: %w", err)
 	}
@@ -147,7 +140,7 @@ func (h *Handler) DeleteMessage(ctx context.Context, req *conversationv1.DeleteM
 		return nil, fmt.Errorf("parse conversation id: %w", err)
 	}
 
-	id, err := hashFromBytes(req.Id)
+	id, err := domain.HashFromBytes(req.Id)
 	if err != nil {
 		return nil, fmt.Errorf("parse message id: %w", err)
 	}
