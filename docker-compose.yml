@@ -1,4 +1,16 @@
 services:
+  conversation:
+    build:
+      context: .
+      dockerfile: ./conversation/Dockerfile
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASS: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_NAME: ${POSTGRES_DB}
+      POSTGRES_ARGS: sslmode=disable
+
   postgres:
     image: docker.io/library/postgres:17-alpine
     environment:

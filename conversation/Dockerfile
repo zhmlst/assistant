@@ -14,4 +14,4 @@ WORKDIR /root/
 
 COPY --from=builder /app ./app
 
-CMD ["/app"]
+CMD ["./app"]
