@@ -4,8 +4,9 @@ ifneq (,$(wildcard .env))
 endif
 
 GOPATH := $(shell go env GOPATH)
+export PATH := $(GOPATH)/bin:$(PATH)
 
-all: gen
+all: image
 
 $(GOPATH)/bin/stringer:
 	go install golang.org/x/tools/cmd/stringer@latest
@@ -26,3 +27,7 @@ gen: $(GOPATH)/bin/buf $(GOPATH)/bin/protoc-gen-go $(GOPATH)/bin/protoc-gen-go-g
 
 run:
 	go run ./cmd
+
+.PHONY: image
+image: gen
+	cd .. && podman build -t conversation -f ./conversation/Dockerfile .
