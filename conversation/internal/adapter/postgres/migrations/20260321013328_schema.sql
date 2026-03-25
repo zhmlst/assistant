@@ -1,10 +1,25 @@
 -- +goose Up
+-- +goose StatementBegin
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+	NEW.updated_at = NOW();
+	RETURN NEW;
+END;
+$$ language 'plpgsql';
+-- +goose StatementEnd
+
 CREATE TABLE users (
 	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 	updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 	deleted_at TIMESTAMPTZ
 );
+
+CREATE TRIGGER update_users_updated_at
+	BEFORE UPDATE ON users
+	FOR EACH ROW
+	EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TABLE conversations (
 	id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -13,6 +28,11 @@ CREATE TABLE conversations (
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 	updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+CREATE TRIGGER update_conversations_updated_at
+	BEFORE UPDATE ON conversations
+	FOR EACH ROW
+	EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TABLE messages (
 	id                BYTEA NOT NULL,

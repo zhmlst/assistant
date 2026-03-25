@@ -6,10 +6,12 @@ import (
 	"fmt"
 	conversationv1 "github.com/zhmlst/assistant/conversation/pkg/conversation/v1"
 	handlerv1 "github.com/zhmlst/assistant/conversation/internal/handler/v1"
+	"github.com/zhmlst/assistant/conversation/internal/adapter/postgres/migrations"
 	"github.com/zhmlst/assistant/conversation/internal/service"
 	"github.com/caarlos0/env/v11"
 	"github.com/zhmlst/assistant/go/logger"
 	"github.com/zhmlst/assistant/go/postgres"
+	"github.com/jackc/pgx/v5/stdlib"
 	"net/url"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -63,8 +65,13 @@ func run() (cause error) {
 		return fmt.Errorf("postgres new: %w", err)
 	}
 
+	if err := migrations.Up(stdlib.OpenDBFromPool(pgpool.Pool), "postgres"); err != nil {
+		return fmt.Errorf("migate db: %w", err)
+	}
+
 	lgr := logger.New(&cfg.Logger)
 
+	
 	service := service.New(pgpool, nil, nil, nil)
 
 	server := grpc.NewServer()
