@@ -1,5 +1,10 @@
--include .env
+include .env
 export
+
+.env: env.example
+	cp env.example .env
+
+DOCKER ?= $(shell command -v podman 2> /dev/null || echo docker)
 
 GOPATH := $(shell go env GOPATH)
 export PATH := $(GOPATH)/bin:$(PATH)
@@ -23,8 +28,13 @@ gen: $(GOPATH)/bin/buf $(GOPATH)/bin/protoc-gen-go $(GOPATH)/bin/protoc-gen-go-g
 	go generate ./...
 	go mod tidy
 
-run:
-	go run ./cmd
+postgres:
+	$(DOCKER) inspect postgres > /dev/null 2>&1 || \
+		$(DOCKER) run -d --name postgres -e POSTGRES_PASSWORD=$(POSTGRES_PASS) -p 5432:5432 docker.io/library/postgres:17-alpine
+	$(DOCKER) start postgres
+
+run: gen postgres
+	go run ./cmd/app
 
 .PHONY: image
 image: gen
