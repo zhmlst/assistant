@@ -1,7 +1,5 @@
-ifneq (,$(wildcard .env))
-    include .env
-    export
-endif
+-include .env
+export
 
 GOPATH := $(shell go env GOPATH)
 export PATH := $(GOPATH)/bin:$(PATH)
