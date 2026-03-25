@@ -1,9 +1,7 @@
 package postgres
 
 import (
-	"github.com/zhmlst/assistant/go/postgres"
 	"github.com/zhmlst/assistant/conversation/internal/domain"
-	"context"
 	"fmt"
 	"database/sql/driver"
 )
@@ -26,6 +24,10 @@ func (r Role) Value() (driver.Value, error) {
 type Hash domain.Hash
 
 func (h *Hash) Scan(src any) error {
+	if src == nil {
+		*h = Hash(domain.NilHash)
+		return nil
+	}
 	val, ok := src.([]byte)
 	if !ok {
 		return fmt.Errorf("cannot scan %T into domain.Hash, expected []byte", val)
@@ -38,17 +40,8 @@ func (h *Hash) Scan(src any) error {
 }
 
 func (h Hash) Value() (driver.Value, error) {
+	if h == Hash(domain.NilHash) {
+		return nil, nil
+	}
 	return h[:], nil
-}
-
-type Messages struct {
-	pool postgres.Pool
-}
-
-func New(pool postgres.Pool) *Messages {
-	return &Messages{}
-}
-
-func (m *Messages) Store(ctx context.Context, msg *domain.Message) (error) {
-	return nil
 }
