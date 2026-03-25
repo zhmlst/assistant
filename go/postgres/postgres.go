@@ -18,6 +18,7 @@ type Config struct {
 	Port          uint
 	User          string
 	Pass          string
+	Name          string
 	Args          url.Values
 	RetryInterval time.Duration
 }
@@ -31,6 +32,7 @@ func (c *Config) String() string {
 		Scheme:   "postgres",
 		User:     url.UserPassword(c.User, c.Pass),
 		Host:     net.JoinHostPort(c.Host, strconv.Itoa(int(c.Port))),
+		Path:     "/" + c.Name,
 		RawQuery: c.Args.Encode(),
 	}
 
