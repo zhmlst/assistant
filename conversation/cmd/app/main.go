@@ -12,12 +12,14 @@ import (
 	"github.com/zhmlst/assistant/go/postgres"
 	"net/url"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 	"os"
 	"net"
 	"os/signal"
 	"reflect"
 	"syscall"
 	"time"
+	"log/slog"
 )
 
 type Config struct {
@@ -69,6 +71,7 @@ func run() (cause error) {
 	handlerV1 := handlerv1.New(service)
 	conversationv1.RegisterMessageServiceServer(server, handlerV1)
 	conversationv1.RegisterConversationServiceServer(server, handlerV1)
+	reflection.Register(server)
 
 	addr, err := net.ResolveTCPAddr("tcp", cfg.GRPC.Addr)
 	if err != nil {
@@ -79,6 +82,8 @@ func run() (cause error) {
 	if err != nil {
 		return fmt.Errorf("listen tcp: %w", err)
 	}
+
+	lgr.Info("listen grpc", slog.String("addr", lis.Addr().String()))
 
 	go func () {
 		if err := server.Serve(lis); errors.Is(err, grpc.ErrServerStopped) {
