@@ -69,6 +69,10 @@ func New(
 	}
 }
 
+func (h *Handler) UserID(ctx context.Context) (uuid.UUID, bool) {
+	return uuid.Nil, true
+}
+
 func (h *Handler) GetConversation(ctx context.Context, req *conversationv1.GetConversationRequest) (*conversationv1.Conversation, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetConversation not implemented")
 }
@@ -93,9 +97,14 @@ func (h *Handler) CreateMessage(
 	ctx context.Context,
 	req *conversationv1.CreateMessageRequest,
 ) (*conversationv1.Message, error) {
-	conversationID, err := uuid.ParseBytes(req.ConversationId)
-	if err != nil {
-		return nil, fmt.Errorf("parse conversation id: %w", err)
+	var err error
+
+	conversationID := uuid.Nil
+	if len(req.ConversationId) > 0 {
+		conversationID, err = uuid.ParseBytes(req.ConversationId)
+		if err != nil {
+			return nil, fmt.Errorf("parse conversation id: %w", err)
+		}
 	}
 
 	role, err := roleFromProto(req.Role)
@@ -103,9 +112,12 @@ func (h *Handler) CreateMessage(
 		return nil, fmt.Errorf("invalid role: %w", err)
 	}
 
-	parentID, err := domain.HashFromBytes(req.ParentId)
-	if err != nil {
-		return nil, fmt.Errorf("invalid parent id: %w", err)
+	parentID := domain.NilHash
+	if len(req.ParentId) > 0 {
+		parentID, err = domain.HashFromBytes(req.ParentId)
+		if err != nil {
+			return nil, fmt.Errorf("invalid parent id: %w", err)
+		}
 	}
 
 	msg, err := h.service.CreateMessage(

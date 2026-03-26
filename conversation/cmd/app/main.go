@@ -8,6 +8,7 @@ import (
 	handlerv1 "github.com/zhmlst/assistant/conversation/internal/handler/v1"
 	"github.com/zhmlst/assistant/conversation/internal/adapter/postgres/migrations"
 	"github.com/zhmlst/assistant/conversation/internal/adapter/postgres/messages"
+	"github.com/zhmlst/assistant/conversation/internal/adapter/postgres/conversations"
 	"github.com/zhmlst/assistant/conversation/internal/service"
 	"github.com/caarlos0/env/v11"
 	"github.com/zhmlst/assistant/go/logger"
@@ -73,11 +74,13 @@ func run() (cause error) {
 	lgr := logger.New(&cfg.Logger)
 
 	messagesRepo := messages.New(pgpool)
+	conversationsRepo := conversations.New(pgpool)
 	
-	service := service.New(pgpool, messagesRepo, nil, nil)
+	handlerV1 := new(handlerv1.Handler)
+	service := service.New(pgpool, messagesRepo, conversationsRepo, handlerV1)
 
 	server := grpc.NewServer()
-	handlerV1 := handlerv1.New(service)
+	handlerV1 = handlerv1.New(service)
 	conversationv1.RegisterMessageServiceServer(server, handlerV1)
 	conversationv1.RegisterConversationServiceServer(server, handlerV1)
 	reflection.Register(server)
