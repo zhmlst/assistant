@@ -19,6 +19,7 @@ func New(pool postgres.Pool) *Conversations {
 func (c *Conversations) Store(ctx context.Context, cnv *domain.Conversation) error {
 	if err := c.pool.QueryRow(ctx, `
 		INSERT INTO conversations (id, user_id, title)
+		VALUES ($1, $2, $3)
 		RETURNING created_at, updated_at
 	`,
 		cnv.ID,
