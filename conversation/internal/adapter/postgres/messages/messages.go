@@ -54,5 +54,15 @@ func (m *Messages) ByID(ctx context.Context, id domain.Hash) (*domain.Message, e
 }
 
 func (m *Messages) Delete(ctx context.Context, id domain.Hash) error {
+	_, err := m.pool.Exec(ctx, `
+		DELETE FROM messages
+		WHERE id = $1
+	`,
+		adapter.Hash(id),
+	)
+	if err != nil {
+		return fmt.Errorf("exec: %w", err)
+	}
+
 	return nil
 }
