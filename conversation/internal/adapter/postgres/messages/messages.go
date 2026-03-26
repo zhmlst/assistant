@@ -1,10 +1,11 @@
 package messages
 
 import (
-	"github.com/zhmlst/assistant/conversation/internal/domain"
-	"github.com/zhmlst/assistant/go/postgres"
 	"context"
 	"fmt"
+	"github.com/zhmlst/assistant/conversation/internal/domain"
+	"github.com/zhmlst/assistant/go/postgres"
+	adapter "github.com/zhmlst/assistant/conversation/internal/adapter/postgres"
 )
 
 type Messages struct {
@@ -15,7 +16,7 @@ func New(pool postgres.Pool) *Messages {
 	return &Messages{pool}
 }
 
-func (m *Messages) Store(ctx context.Context, msg *domain.Message) (error) {
+func (m *Messages) Store(ctx context.Context, msg *domain.Message) error {
 	if err := m.pool.QueryRow(ctx, `
 		INSERT INTO messages (id, conversation_id, parent_message_id, role, text)
 		VALUES ($1, $2, $3, $4, $5)
@@ -30,7 +31,26 @@ func (m *Messages) Store(ctx context.Context, msg *domain.Message) (error) {
 }
 
 func (m *Messages) ByID(ctx context.Context, id domain.Hash) (*domain.Message, error) {
-	return nil, nil
+	var msg domain.Message
+
+	if err := m.pool.QueryRow(ctx, `
+		SELECT id, conversation_id, parent_message_id, role, text, created_at
+		FROM messages
+		WHERE id = $1
+	`,
+		adapter.Hash(id),
+	).Scan(
+		(*adapter.Hash)(&msg.ID),
+		&msg.ConversationID,
+		(*adapter.Hash)(&msg.ParentID),
+		(*adapter.Role)(&msg.Role),
+		&msg.Text,
+		&msg.CreatedAt,
+	); err != nil {
+		return nil, fmt.Errorf("query row: %w", err)
+	}
+
+	return &msg, nil
 }
 
 func (m *Messages) Delete(ctx context.Context, id domain.Hash) error {
