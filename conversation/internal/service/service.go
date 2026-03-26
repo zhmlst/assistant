@@ -11,6 +11,12 @@ type Transactor interface {
 	Wrap(context.Context, func(context.Context) error) error
 }
 
+type Users interface {
+	ByID(ctx context.Context, id uuid.UUID) (*domain.User, error)
+	Store(ctx context.Context, usr *domain.User) error
+	Delete(ctx context.Context, id uuid.UUID) error
+}
+
 type Conversations interface {
 	Store(ctx context.Context, cnv *domain.Conversation) error
 	Delete(ctx context.Context, id uuid.UUID) error
@@ -28,6 +34,7 @@ type UserIDProvider interface {
 
 type Service struct {
 	transactor     Transactor
+	users          Users
 	messages       Messages
 	conversations  Conversations
 	userIDProvider UserIDProvider
@@ -36,15 +43,45 @@ type Service struct {
 func New(
 	transactor Transactor,
 	messages Messages,
+	users Users,
 	conversations Conversations,
 	userIDProvider UserIDProvider,
 ) *Service {
 	return &Service{
 		transactor:     transactor,
+		users:          users,
 		messages:       messages,
 		conversations:  conversations,
 		userIDProvider: userIDProvider,
 	}
+}
+
+func (s *Service) UserByID(ctx context.Context, id uuid.UUID) (*domain.User, error) {
+	usr, err := s.users.ByID(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("user by id: %w", err)
+	}
+
+	return usr, nil
+}
+
+func (s *Service) CreateUser(ctx context.Context) (*domain.User, error) {
+	usr := domain.User{
+		ID: uuid.New(),
+	}
+	err := s.users.Store(ctx, &usr)
+	if err != nil {
+		return nil, fmt.Errorf("store user: %w", err)
+	}
+	return &usr, nil
+}
+
+func (s *Service) DeleteUser(ctx context.Context, id uuid.UUID) error {
+	if err := s.users.Delete(ctx, id); err != nil {
+		return fmt.Errorf("delete user: %w", err)
+	}
+
+	return nil
 }
 
 func (s *Service) CreateMessage(

@@ -8,13 +8,27 @@ import (
 	conversationv1 "github.com/zhmlst/assistant/conversation/pkg/conversation/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"google.golang.org/grpc/metadata"
 )
 
 type Service interface {
+	CreateUser(
+		ctx context.Context,
+	) (*domain.User, error)
+
+	UserByID(
+		ctx context.Context,
+		id uuid.UUID,
+	) (*domain.User, error)
+
+	DeleteUser(
+		ctx context.Context,
+		id uuid.UUID,
+	) error
+
 	CreateMessage(
 		ctx context.Context,
 		parentID domain.Hash,
@@ -23,7 +37,7 @@ type Service interface {
 		text string,
 	) (*domain.Message, error)
 
-	DeleteMessage (
+	DeleteMessage(
 		ctx context.Context,
 		id domain.Hash,
 		conversationID uuid.UUID,
@@ -31,34 +45,35 @@ type Service interface {
 }
 
 func roleFromProto(r conversationv1.Role) (domain.Role, error) {
-    switch r {
-    case conversationv1.Role_ROLE_ASSISTANT:
-        return domain.RoleAssistant, nil
-    case conversationv1.Role_ROLE_SYSTEM:
-        return domain.RoleSystem, nil
-    case conversationv1.Role_ROLE_USER:
-        return domain.RoleUser, nil
-    default:
-        return 0, fmt.Errorf("invalid proto role %v", r)
-    }
+	switch r {
+	case conversationv1.Role_ROLE_ASSISTANT:
+		return domain.RoleAssistant, nil
+	case conversationv1.Role_ROLE_SYSTEM:
+		return domain.RoleSystem, nil
+	case conversationv1.Role_ROLE_USER:
+		return domain.RoleUser, nil
+	default:
+		return 0, fmt.Errorf("invalid proto role %v", r)
+	}
 }
 
 func roleToProto(r domain.Role) (conversationv1.Role, error) {
-    switch r {
-    case domain.RoleAssistant:
-        return conversationv1.Role_ROLE_ASSISTANT, nil
-    case domain.RoleSystem:
-        return conversationv1.Role_ROLE_SYSTEM, nil
-    case domain.RoleUser:
-        return conversationv1.Role_ROLE_USER, nil
-    default:
-        return conversationv1.Role_ROLE_UNSPECIFIED, fmt.Errorf("invalid domain role %v", r)
-    }
+	switch r {
+	case domain.RoleAssistant:
+		return conversationv1.Role_ROLE_ASSISTANT, nil
+	case domain.RoleSystem:
+		return conversationv1.Role_ROLE_SYSTEM, nil
+	case domain.RoleUser:
+		return conversationv1.Role_ROLE_USER, nil
+	default:
+		return conversationv1.Role_ROLE_UNSPECIFIED, fmt.Errorf("invalid domain role %v", r)
+	}
 }
 
 type Handler struct {
+	conversationv1.UnimplementedUserServiceServer
+	conversationv1.UnimplementedConversationServiceServer
 	conversationv1.UnimplementedMessageServiceServer
-	conversationv1.ConversationServiceServer
 	service Service
 }
 
@@ -163,7 +178,7 @@ func (h *Handler) CreateMessage(
 }
 
 func (h *Handler) DeleteMessage(ctx context.Context, req *conversationv1.DeleteMessageRequest) (*emptypb.Empty, error) {
-	conversationID , err := uuid.ParseBytes(req.ConversationId)
+	conversationID, err := uuid.ParseBytes(req.ConversationId)
 	if err != nil {
 		return nil, fmt.Errorf("parse conversation id: %w", err)
 	}
@@ -194,4 +209,53 @@ func (h *Handler) ListVariants(ctx context.Context, req *conversationv1.ListVari
 
 func (h *Handler) SelectVariant(ctx context.Context, req *conversationv1.SelectVariantRequest) (*emptypb.Empty, error) {
 	return nil, status.Error(codes.Unimplemented, "method SelectVariant not implemented")
+}
+
+func (h *Handler) GetUser(ctx context.Context, req *conversationv1.GetUserRequest) (*conversationv1.User, error) {
+	usrID, err := uuid.ParseBytes(req.Id)
+	if err != nil {
+		return nil, fmt.Errorf("parse user id: %w", err)
+	}
+
+	usr, err := h.service.UserByID(ctx, usrID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &conversationv1.User{
+		Id:         usr.ID[:],
+		CreateTime: timestamppb.New(usr.CreatedAt),
+		UpdateTime: timestamppb.New(usr.UpdatedAt),
+		DeleteTime: timestamppb.New(usr.DeletedAt),
+	}, nil
+}
+
+func (h *Handler) CreateUser(ctx context.Context, req *conversationv1.CreateUserRequest) (*conversationv1.User, error) {
+	usr, err := h.service.CreateUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &conversationv1.User{
+		Id:         usr.ID[:],
+		CreateTime: timestamppb.New(usr.CreatedAt),
+		UpdateTime: timestamppb.New(usr.UpdatedAt),
+		DeleteTime: timestamppb.New(usr.DeletedAt),
+	}, nil
+}
+
+func (h *Handler) UpdateUser(ctx context.Context, req *conversationv1.UpdateUserRequest) (*conversationv1.User, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateUser not implemented")
+}
+
+func (h *Handler) DeleteUser(ctx context.Context, req *conversationv1.DeleteUserRequest) (*emptypb.Empty, error) {
+	usrID, err := uuid.ParseBytes(req.Id)
+	if err != nil {
+		return nil, fmt.Errorf("parse user id: %w", err)
+	}
+
+	if err := h.service.DeleteUser(ctx, usrID); err != nil {
+		return nil, err
+	}
+	return &emptypb.Empty{}, nil
 }

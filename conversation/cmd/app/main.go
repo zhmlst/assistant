@@ -4,32 +4,33 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	conversationv1 "github.com/zhmlst/assistant/conversation/pkg/conversation/v1"
-	handlerv1 "github.com/zhmlst/assistant/conversation/internal/handler/v1"
-	"github.com/zhmlst/assistant/conversation/internal/adapter/postgres/migrations"
-	"github.com/zhmlst/assistant/conversation/internal/adapter/postgres/messages"
-	"github.com/zhmlst/assistant/conversation/internal/adapter/postgres/conversations"
-	"github.com/zhmlst/assistant/conversation/internal/service"
 	"github.com/caarlos0/env/v11"
+	"github.com/jackc/pgx/v5/stdlib"
+	"github.com/zhmlst/assistant/conversation/internal/adapter/postgres/conversations"
+	"github.com/zhmlst/assistant/conversation/internal/adapter/postgres/messages"
+	"github.com/zhmlst/assistant/conversation/internal/adapter/postgres/migrations"
+	"github.com/zhmlst/assistant/conversation/internal/adapter/postgres/users"
+	handlerv1 "github.com/zhmlst/assistant/conversation/internal/handler/v1"
+	"github.com/zhmlst/assistant/conversation/internal/service"
+	conversationv1 "github.com/zhmlst/assistant/conversation/pkg/conversation/v1"
 	"github.com/zhmlst/assistant/go/logger"
 	"github.com/zhmlst/assistant/go/postgres"
-	"github.com/jackc/pgx/v5/stdlib"
-	"net/url"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"os"
+	"log/slog"
 	"net"
+	"net/url"
+	"os"
 	"os/signal"
 	"reflect"
 	"syscall"
 	"time"
-	"log/slog"
 )
 
 type Config struct {
 	Postgres postgres.Config `envPrefix:"POSTGRES_"`
 	Logger   logger.Config   `envPrefix:"LOGGER_"`
-	GRPC struct {
+	GRPC     struct {
 		Addr string
 	} `envPrefix:"GRPC_"`
 }
@@ -73,16 +74,18 @@ func run() (cause error) {
 
 	lgr := logger.New(&cfg.Logger)
 
+	usersRepo := users.New(pgpool)
 	messagesRepo := messages.New(pgpool)
 	conversationsRepo := conversations.New(pgpool)
-	
+
 	handlerV1 := new(handlerv1.Handler)
-	service := service.New(pgpool, messagesRepo, conversationsRepo, handlerV1)
+	service := service.New(pgpool, messagesRepo, usersRepo, conversationsRepo, handlerV1)
 
 	server := grpc.NewServer()
 	handlerV1 = handlerv1.New(service)
 	conversationv1.RegisterMessageServiceServer(server, handlerV1)
 	conversationv1.RegisterConversationServiceServer(server, handlerV1)
+	conversationv1.RegisterUserServiceServer(server, handlerV1)
 	reflection.Register(server)
 
 	addr, err := net.ResolveTCPAddr("tcp", cfg.GRPC.Addr)
@@ -97,7 +100,7 @@ func run() (cause error) {
 
 	lgr.Info("listen grpc", slog.String("addr", lis.Addr().String()))
 
-	go func () {
+	go func() {
 		if err := server.Serve(lis); errors.Is(err, grpc.ErrServerStopped) {
 			cause = err
 		}

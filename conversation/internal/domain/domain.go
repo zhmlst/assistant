@@ -2,12 +2,19 @@ package domain
 
 import (
 	"crypto/sha256"
+	"fmt"
 	"github.com/google/uuid"
 	"hash"
 	"sync"
 	"time"
-	"fmt"
 )
+
+type User struct {
+	ID        uuid.UUID
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt time.Time
+}
 
 type Preferences struct {
 }
@@ -54,10 +61,10 @@ type Hash [32]byte
 var NilHash Hash
 
 func HashFromBytes(b []byte) (Hash, error) {
-    if len(b) < len(NilHash) {
-        return NilHash, fmt.Errorf("invalid hash length %d", len(b))
-    }
-    return Hash(b), nil
+	if len(b) < len(NilHash) {
+		return NilHash, fmt.Errorf("invalid hash length %d", len(b))
+	}
+	return Hash(b), nil
 }
 
 type Message struct {
