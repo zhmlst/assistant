@@ -35,5 +35,15 @@ func (c *Conversations) Store(ctx context.Context, cnv *domain.Conversation) err
 }
 
 func (c *Conversations) Delete(ctx context.Context, id uuid.UUID) error {
+	_, err := c.pool.Exec(ctx, `
+		DELETE FROM conversations
+		WHERE id = $1
+	`,
+		id,
+	)
+	if err != nil {
+		return fmt.Errorf("exec: %w", err)
+	}
+
 	return nil
 }
