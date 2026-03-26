@@ -1104,6 +1104,234 @@ func (x *SelectVariantRequest) GetVariantMessageId() []byte {
 	return nil
 }
 
+type User struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            []byte                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	CreateTime    *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=create_time,json=createTime,proto3" json:"create_time,omitempty"`
+	UpdateTime    *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=update_time,json=updateTime,proto3" json:"update_time,omitempty"`
+	DeleteTime    *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=delete_time,json=deleteTime,proto3" json:"delete_time,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *User) Reset() {
+	*x = User{}
+	mi := &file_conversation_v1_conversation_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *User) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*User) ProtoMessage() {}
+
+func (x *User) ProtoReflect() protoreflect.Message {
+	mi := &file_conversation_v1_conversation_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use User.ProtoReflect.Descriptor instead.
+func (*User) Descriptor() ([]byte, []int) {
+	return file_conversation_v1_conversation_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *User) GetId() []byte {
+	if x != nil {
+		return x.Id
+	}
+	return nil
+}
+
+func (x *User) GetCreateTime() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreateTime
+	}
+	return nil
+}
+
+func (x *User) GetUpdateTime() *timestamppb.Timestamp {
+	if x != nil {
+		return x.UpdateTime
+	}
+	return nil
+}
+
+func (x *User) GetDeleteTime() *timestamppb.Timestamp {
+	if x != nil {
+		return x.DeleteTime
+	}
+	return nil
+}
+
+type GetUserRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            []byte                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetUserRequest) Reset() {
+	*x = GetUserRequest{}
+	mi := &file_conversation_v1_conversation_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetUserRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUserRequest) ProtoMessage() {}
+
+func (x *GetUserRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_conversation_v1_conversation_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUserRequest.ProtoReflect.Descriptor instead.
+func (*GetUserRequest) Descriptor() ([]byte, []int) {
+	return file_conversation_v1_conversation_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *GetUserRequest) GetId() []byte {
+	if x != nil {
+		return x.Id
+	}
+	return nil
+}
+
+type CreateUserRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateUserRequest) Reset() {
+	*x = CreateUserRequest{}
+	mi := &file_conversation_v1_conversation_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateUserRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateUserRequest) ProtoMessage() {}
+
+func (x *CreateUserRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_conversation_v1_conversation_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateUserRequest.ProtoReflect.Descriptor instead.
+func (*CreateUserRequest) Descriptor() ([]byte, []int) {
+	return file_conversation_v1_conversation_proto_rawDescGZIP(), []int{19}
+}
+
+type UpdateUserRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateUserRequest) Reset() {
+	*x = UpdateUserRequest{}
+	mi := &file_conversation_v1_conversation_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateUserRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateUserRequest) ProtoMessage() {}
+
+func (x *UpdateUserRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_conversation_v1_conversation_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateUserRequest.ProtoReflect.Descriptor instead.
+func (*UpdateUserRequest) Descriptor() ([]byte, []int) {
+	return file_conversation_v1_conversation_proto_rawDescGZIP(), []int{20}
+}
+
+type DeleteUserRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            []byte                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteUserRequest) Reset() {
+	*x = DeleteUserRequest{}
+	mi := &file_conversation_v1_conversation_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteUserRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteUserRequest) ProtoMessage() {}
+
+func (x *DeleteUserRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_conversation_v1_conversation_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteUserRequest.ProtoReflect.Descriptor instead.
+func (*DeleteUserRequest) Descriptor() ([]byte, []int) {
+	return file_conversation_v1_conversation_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *DeleteUserRequest) GetId() []byte {
+	if x != nil {
+		return x.Id
+	}
+	return nil
+}
+
 type Conversation_Preferences struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -1112,7 +1340,7 @@ type Conversation_Preferences struct {
 
 func (x *Conversation_Preferences) Reset() {
 	*x = Conversation_Preferences{}
-	mi := &file_conversation_v1_conversation_proto_msgTypes[17]
+	mi := &file_conversation_v1_conversation_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1124,7 +1352,7 @@ func (x *Conversation_Preferences) String() string {
 func (*Conversation_Preferences) ProtoMessage() {}
 
 func (x *Conversation_Preferences) ProtoReflect() protoreflect.Message {
-	mi := &file_conversation_v1_conversation_proto_msgTypes[17]
+	mi := &file_conversation_v1_conversation_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1151,7 +1379,7 @@ type GetHistoryChunkResponse_Entry struct {
 
 func (x *GetHistoryChunkResponse_Entry) Reset() {
 	*x = GetHistoryChunkResponse_Entry{}
-	mi := &file_conversation_v1_conversation_proto_msgTypes[18]
+	mi := &file_conversation_v1_conversation_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1163,7 +1391,7 @@ func (x *GetHistoryChunkResponse_Entry) String() string {
 func (*GetHistoryChunkResponse_Entry) ProtoMessage() {}
 
 func (x *GetHistoryChunkResponse_Entry) ProtoReflect() protoreflect.Message {
-	mi := &file_conversation_v1_conversation_proto_msgTypes[18]
+	mi := &file_conversation_v1_conversation_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1285,7 +1513,21 @@ const file_conversation_v1_conversation_proto_rawDesc = "" +
 	"\x14SelectVariantRequest\x12'\n" +
 	"\x0fconversation_id\x18\x01 \x01(\fR\x0econversationId\x12*\n" +
 	"\x11parent_message_id\x18\x02 \x01(\fR\x0fparentMessageId\x12,\n" +
-	"\x12variant_message_id\x18\x03 \x01(\fR\x10variantMessageId*P\n" +
+	"\x12variant_message_id\x18\x03 \x01(\fR\x10variantMessageId\"\xcd\x01\n" +
+	"\x04User\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\fR\x02id\x12;\n" +
+	"\vcreate_time\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"createTime\x12;\n" +
+	"\vupdate_time\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"updateTime\x12;\n" +
+	"\vdelete_time\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"deleteTime\" \n" +
+	"\x0eGetUserRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\fR\x02id\"\x13\n" +
+	"\x11CreateUserRequest\"\x13\n" +
+	"\x11UpdateUserRequest\"#\n" +
+	"\x11DeleteUserRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\fR\x02id*P\n" +
 	"\x04Role\x12\x14\n" +
 	"\x10ROLE_UNSPECIFIED\x10\x00\x12\x12\n" +
 	"\x0eROLE_ASSISTANT\x10\x01\x12\x0f\n" +
@@ -1305,7 +1547,15 @@ const file_conversation_v1_conversation_proto_rawDesc = "" +
 	"GetHistory\x12\".conversation.v1.GetHistoryRequest\x1a\x18.conversation.v1.Message0\x01\x12d\n" +
 	"\x0fGetHistoryChunk\x12'.conversation.v1.GetHistoryChunkRequest\x1a(.conversation.v1.GetHistoryChunkResponse\x12[\n" +
 	"\fListVariants\x12$.conversation.v1.ListVariantsRequest\x1a%.conversation.v1.ListVariantsResponse\x12N\n" +
-	"\rSelectVariant\x12%.conversation.v1.SelectVariantRequest\x1a\x16.google.protobuf.EmptyBMZKgithub.com/zhmlst/assistant/conversation/pkg/conversation/v1;conversationv1b\x06proto3"
+	"\rSelectVariant\x12%.conversation.v1.SelectVariantRequest\x1a\x16.google.protobuf.Empty2\xac\x02\n" +
+	"\vUserService\x12A\n" +
+	"\aGetUser\x12\x1f.conversation.v1.GetUserRequest\x1a\x15.conversation.v1.User\x12G\n" +
+	"\n" +
+	"CreateUser\x12\".conversation.v1.CreateUserRequest\x1a\x15.conversation.v1.User\x12G\n" +
+	"\n" +
+	"UpdateUser\x12\".conversation.v1.UpdateUserRequest\x1a\x15.conversation.v1.User\x12H\n" +
+	"\n" +
+	"DeleteUser\x12\".conversation.v1.DeleteUserRequest\x1a\x16.google.protobuf.EmptyBMZKgithub.com/zhmlst/assistant/conversation/pkg/conversation/v1;conversationv1b\x06proto3"
 
 var (
 	file_conversation_v1_conversation_proto_rawDescOnce sync.Once
@@ -1320,7 +1570,7 @@ func file_conversation_v1_conversation_proto_rawDescGZIP() []byte {
 }
 
 var file_conversation_v1_conversation_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_conversation_v1_conversation_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
+var file_conversation_v1_conversation_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
 var file_conversation_v1_conversation_proto_goTypes = []any{
 	(Role)(0),                             // 0: conversation.v1.Role
 	(*Conversation)(nil),                  // 1: conversation.v1.Conversation
@@ -1340,53 +1590,69 @@ var file_conversation_v1_conversation_proto_goTypes = []any{
 	(*ListVariantsRequest)(nil),           // 15: conversation.v1.ListVariantsRequest
 	(*ListVariantsResponse)(nil),          // 16: conversation.v1.ListVariantsResponse
 	(*SelectVariantRequest)(nil),          // 17: conversation.v1.SelectVariantRequest
-	(*Conversation_Preferences)(nil),      // 18: conversation.v1.Conversation.Preferences
-	(*GetHistoryChunkResponse_Entry)(nil), // 19: conversation.v1.GetHistoryChunkResponse.Entry
-	(*timestamppb.Timestamp)(nil),         // 20: google.protobuf.Timestamp
-	(*fieldmaskpb.FieldMask)(nil),         // 21: google.protobuf.FieldMask
-	(*emptypb.Empty)(nil),                 // 22: google.protobuf.Empty
+	(*User)(nil),                          // 18: conversation.v1.User
+	(*GetUserRequest)(nil),                // 19: conversation.v1.GetUserRequest
+	(*CreateUserRequest)(nil),             // 20: conversation.v1.CreateUserRequest
+	(*UpdateUserRequest)(nil),             // 21: conversation.v1.UpdateUserRequest
+	(*DeleteUserRequest)(nil),             // 22: conversation.v1.DeleteUserRequest
+	(*Conversation_Preferences)(nil),      // 23: conversation.v1.Conversation.Preferences
+	(*GetHistoryChunkResponse_Entry)(nil), // 24: conversation.v1.GetHistoryChunkResponse.Entry
+	(*timestamppb.Timestamp)(nil),         // 25: google.protobuf.Timestamp
+	(*fieldmaskpb.FieldMask)(nil),         // 26: google.protobuf.FieldMask
+	(*emptypb.Empty)(nil),                 // 27: google.protobuf.Empty
 }
 var file_conversation_v1_conversation_proto_depIdxs = []int32{
-	18, // 0: conversation.v1.Conversation.preferences:type_name -> conversation.v1.Conversation.Preferences
-	20, // 1: conversation.v1.Conversation.create_time:type_name -> google.protobuf.Timestamp
-	20, // 2: conversation.v1.Conversation.update_time:type_name -> google.protobuf.Timestamp
+	23, // 0: conversation.v1.Conversation.preferences:type_name -> conversation.v1.Conversation.Preferences
+	25, // 1: conversation.v1.Conversation.create_time:type_name -> google.protobuf.Timestamp
+	25, // 2: conversation.v1.Conversation.update_time:type_name -> google.protobuf.Timestamp
 	1,  // 3: conversation.v1.ListConversationsResponse.conversations:type_name -> conversation.v1.Conversation
 	1,  // 4: conversation.v1.UpdateConversationRequest.conversation:type_name -> conversation.v1.Conversation
-	21, // 5: conversation.v1.UpdateConversationRequest.field_mask:type_name -> google.protobuf.FieldMask
+	26, // 5: conversation.v1.UpdateConversationRequest.field_mask:type_name -> google.protobuf.FieldMask
 	0,  // 6: conversation.v1.Message.role:type_name -> conversation.v1.Role
-	20, // 7: conversation.v1.Message.create_time:type_name -> google.protobuf.Timestamp
+	25, // 7: conversation.v1.Message.create_time:type_name -> google.protobuf.Timestamp
 	6,  // 8: conversation.v1.ListMessagesResponse.messages:type_name -> conversation.v1.Message
 	0,  // 9: conversation.v1.CreateMessageRequest.role:type_name -> conversation.v1.Role
-	19, // 10: conversation.v1.GetHistoryChunkResponse.entries:type_name -> conversation.v1.GetHistoryChunkResponse.Entry
+	24, // 10: conversation.v1.GetHistoryChunkResponse.entries:type_name -> conversation.v1.GetHistoryChunkResponse.Entry
 	6,  // 11: conversation.v1.ListVariantsResponse.variants:type_name -> conversation.v1.Message
-	6,  // 12: conversation.v1.GetHistoryChunkResponse.Entry.variants:type_name -> conversation.v1.Message
-	2,  // 13: conversation.v1.ConversationService.GetConversation:input_type -> conversation.v1.GetConversationRequest
-	3,  // 14: conversation.v1.ConversationService.ListConversations:input_type -> conversation.v1.ListConversationsRequest
-	5,  // 15: conversation.v1.ConversationService.UpdateConversation:input_type -> conversation.v1.UpdateConversationRequest
-	7,  // 16: conversation.v1.MessageService.GetMessage:input_type -> conversation.v1.GetMessageRequest
-	8,  // 17: conversation.v1.MessageService.ListMessages:input_type -> conversation.v1.ListMessagesRequest
-	10, // 18: conversation.v1.MessageService.CreateMessage:input_type -> conversation.v1.CreateMessageRequest
-	11, // 19: conversation.v1.MessageService.DeleteMessage:input_type -> conversation.v1.DeleteMessageRequest
-	12, // 20: conversation.v1.MessageService.GetHistory:input_type -> conversation.v1.GetHistoryRequest
-	13, // 21: conversation.v1.MessageService.GetHistoryChunk:input_type -> conversation.v1.GetHistoryChunkRequest
-	15, // 22: conversation.v1.MessageService.ListVariants:input_type -> conversation.v1.ListVariantsRequest
-	17, // 23: conversation.v1.MessageService.SelectVariant:input_type -> conversation.v1.SelectVariantRequest
-	1,  // 24: conversation.v1.ConversationService.GetConversation:output_type -> conversation.v1.Conversation
-	4,  // 25: conversation.v1.ConversationService.ListConversations:output_type -> conversation.v1.ListConversationsResponse
-	1,  // 26: conversation.v1.ConversationService.UpdateConversation:output_type -> conversation.v1.Conversation
-	6,  // 27: conversation.v1.MessageService.GetMessage:output_type -> conversation.v1.Message
-	9,  // 28: conversation.v1.MessageService.ListMessages:output_type -> conversation.v1.ListMessagesResponse
-	6,  // 29: conversation.v1.MessageService.CreateMessage:output_type -> conversation.v1.Message
-	22, // 30: conversation.v1.MessageService.DeleteMessage:output_type -> google.protobuf.Empty
-	6,  // 31: conversation.v1.MessageService.GetHistory:output_type -> conversation.v1.Message
-	14, // 32: conversation.v1.MessageService.GetHistoryChunk:output_type -> conversation.v1.GetHistoryChunkResponse
-	16, // 33: conversation.v1.MessageService.ListVariants:output_type -> conversation.v1.ListVariantsResponse
-	22, // 34: conversation.v1.MessageService.SelectVariant:output_type -> google.protobuf.Empty
-	24, // [24:35] is the sub-list for method output_type
-	13, // [13:24] is the sub-list for method input_type
-	13, // [13:13] is the sub-list for extension type_name
-	13, // [13:13] is the sub-list for extension extendee
-	0,  // [0:13] is the sub-list for field type_name
+	25, // 12: conversation.v1.User.create_time:type_name -> google.protobuf.Timestamp
+	25, // 13: conversation.v1.User.update_time:type_name -> google.protobuf.Timestamp
+	25, // 14: conversation.v1.User.delete_time:type_name -> google.protobuf.Timestamp
+	6,  // 15: conversation.v1.GetHistoryChunkResponse.Entry.variants:type_name -> conversation.v1.Message
+	2,  // 16: conversation.v1.ConversationService.GetConversation:input_type -> conversation.v1.GetConversationRequest
+	3,  // 17: conversation.v1.ConversationService.ListConversations:input_type -> conversation.v1.ListConversationsRequest
+	5,  // 18: conversation.v1.ConversationService.UpdateConversation:input_type -> conversation.v1.UpdateConversationRequest
+	7,  // 19: conversation.v1.MessageService.GetMessage:input_type -> conversation.v1.GetMessageRequest
+	8,  // 20: conversation.v1.MessageService.ListMessages:input_type -> conversation.v1.ListMessagesRequest
+	10, // 21: conversation.v1.MessageService.CreateMessage:input_type -> conversation.v1.CreateMessageRequest
+	11, // 22: conversation.v1.MessageService.DeleteMessage:input_type -> conversation.v1.DeleteMessageRequest
+	12, // 23: conversation.v1.MessageService.GetHistory:input_type -> conversation.v1.GetHistoryRequest
+	13, // 24: conversation.v1.MessageService.GetHistoryChunk:input_type -> conversation.v1.GetHistoryChunkRequest
+	15, // 25: conversation.v1.MessageService.ListVariants:input_type -> conversation.v1.ListVariantsRequest
+	17, // 26: conversation.v1.MessageService.SelectVariant:input_type -> conversation.v1.SelectVariantRequest
+	19, // 27: conversation.v1.UserService.GetUser:input_type -> conversation.v1.GetUserRequest
+	20, // 28: conversation.v1.UserService.CreateUser:input_type -> conversation.v1.CreateUserRequest
+	21, // 29: conversation.v1.UserService.UpdateUser:input_type -> conversation.v1.UpdateUserRequest
+	22, // 30: conversation.v1.UserService.DeleteUser:input_type -> conversation.v1.DeleteUserRequest
+	1,  // 31: conversation.v1.ConversationService.GetConversation:output_type -> conversation.v1.Conversation
+	4,  // 32: conversation.v1.ConversationService.ListConversations:output_type -> conversation.v1.ListConversationsResponse
+	1,  // 33: conversation.v1.ConversationService.UpdateConversation:output_type -> conversation.v1.Conversation
+	6,  // 34: conversation.v1.MessageService.GetMessage:output_type -> conversation.v1.Message
+	9,  // 35: conversation.v1.MessageService.ListMessages:output_type -> conversation.v1.ListMessagesResponse
+	6,  // 36: conversation.v1.MessageService.CreateMessage:output_type -> conversation.v1.Message
+	27, // 37: conversation.v1.MessageService.DeleteMessage:output_type -> google.protobuf.Empty
+	6,  // 38: conversation.v1.MessageService.GetHistory:output_type -> conversation.v1.Message
+	14, // 39: conversation.v1.MessageService.GetHistoryChunk:output_type -> conversation.v1.GetHistoryChunkResponse
+	16, // 40: conversation.v1.MessageService.ListVariants:output_type -> conversation.v1.ListVariantsResponse
+	27, // 41: conversation.v1.MessageService.SelectVariant:output_type -> google.protobuf.Empty
+	18, // 42: conversation.v1.UserService.GetUser:output_type -> conversation.v1.User
+	18, // 43: conversation.v1.UserService.CreateUser:output_type -> conversation.v1.User
+	18, // 44: conversation.v1.UserService.UpdateUser:output_type -> conversation.v1.User
+	27, // 45: conversation.v1.UserService.DeleteUser:output_type -> google.protobuf.Empty
+	31, // [31:46] is the sub-list for method output_type
+	16, // [16:31] is the sub-list for method input_type
+	16, // [16:16] is the sub-list for extension type_name
+	16, // [16:16] is the sub-list for extension extendee
+	0,  // [0:16] is the sub-list for field type_name
 }
 
 func init() { file_conversation_v1_conversation_proto_init() }
@@ -1400,9 +1666,9 @@ func file_conversation_v1_conversation_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_conversation_v1_conversation_proto_rawDesc), len(file_conversation_v1_conversation_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   19,
+			NumMessages:   24,
 			NumExtensions: 0,
-			NumServices:   2,
+			NumServices:   3,
 		},
 		GoTypes:           file_conversation_v1_conversation_proto_goTypes,
 		DependencyIndexes: file_conversation_v1_conversation_proto_depIdxs,
