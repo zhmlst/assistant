@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
+	"google.golang.org/grpc/metadata"
 )
 
 type Service interface {
@@ -70,7 +71,22 @@ func New(
 }
 
 func (h *Handler) UserID(ctx context.Context) (uuid.UUID, bool) {
-	return uuid.Nil, true
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return uuid.Nil, false
+	}
+
+	xuserid := md.Get("x-user-id")
+	if len(xuserid) < 1 {
+		return uuid.Nil, false
+	}
+
+	userID, err := uuid.Parse(xuserid[0])
+	if err != nil {
+		return uuid.Nil, false
+	}
+
+	return userID, true
 }
 
 func (h *Handler) GetConversation(ctx context.Context, req *conversationv1.GetConversationRequest) (*conversationv1.Conversation, error) {

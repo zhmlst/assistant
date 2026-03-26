@@ -12,6 +12,7 @@ const (
 	ErrNotFound
 	ErrAlreadyExists
 	ErrInvalidInput
+	ErrUnauthorized
 )
 
 type Error struct {

@@ -11,11 +11,12 @@ func _() {
 	_ = x[ErrNotFound-1]
 	_ = x[ErrAlreadyExists-2]
 	_ = x[ErrInvalidInput-3]
+	_ = x[ErrUnauthorized-4]
 }
 
-const _Err_name = "NotFoundAlreadyExistsInvalidInput"
+const _Err_name = "NotFoundAlreadyExistsInvalidInputUnauthorized"
 
-var _Err_index = [...]uint8{0, 8, 21, 33}
+var _Err_index = [...]uint8{0, 8, 21, 33, 45}
 
 func (i Err) String() string {
 	idx := int(i) - 1
