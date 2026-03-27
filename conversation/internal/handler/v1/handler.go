@@ -139,7 +139,7 @@ func (h *Handler) CreateMessage(
 
 	conversationID := uuid.Nil
 	if len(req.ConversationId) > 0 {
-		conversationID, err = uuid.ParseBytes(req.ConversationId)
+		conversationID, err = uuid.FromBytes(req.ConversationId)
 		if err != nil {
 			return nil, fmt.Errorf("parse conversation id: %w", err)
 		}
