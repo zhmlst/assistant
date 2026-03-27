@@ -2,6 +2,7 @@ package v1
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/zhmlst/assistant/conversation/internal/domain"
@@ -85,23 +86,29 @@ func New(
 	}
 }
 
-func (h *Handler) UserID(ctx context.Context) (uuid.UUID, bool) {
+var (
+	ErrMetadataMissing = errors.New("metadata not found in context")
+	ErrUserIDMissing   = errors.New("x-user-id header is missing")
+	ErrInvalidUUID     = errors.New("x-user-id is not a valid uuid")
+)
+
+func (h *Handler) UserID(ctx context.Context) (uuid.UUID, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		return uuid.Nil, false
+		return uuid.Nil, ErrMetadataMissing
 	}
 
 	xuserid := md.Get("x-user-id")
-	if len(xuserid) < 1 {
-		return uuid.Nil, false
+	if len(xuserid) == 0 || xuserid[0] == "" {
+		return uuid.Nil, ErrUserIDMissing
 	}
 
 	userID, err := uuid.Parse(xuserid[0])
 	if err != nil {
-		return uuid.Nil, false
+		return uuid.Nil, fmt.Errorf("%w: %v", ErrInvalidUUID, err)
 	}
 
-	return userID, true
+	return userID, nil
 }
 
 func (h *Handler) GetConversation(ctx context.Context, req *conversationv1.GetConversationRequest) (*conversationv1.Conversation, error) {

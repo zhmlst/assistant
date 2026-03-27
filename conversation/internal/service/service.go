@@ -29,7 +29,7 @@ type Messages interface {
 }
 
 type UserIDProvider interface {
-	UserID(context.Context) (uuid.UUID, bool)
+	UserID(context.Context) (uuid.UUID, error)
 }
 
 type Service struct {
@@ -92,9 +92,9 @@ func (s *Service) CreateMessage(
 	text string,
 ) (*domain.Message, error) {
 	if parentID == domain.NilHash {
-		userID, ok := s.userIDProvider.UserID(ctx)
-		if !ok {
-			return nil, domain.ErrInvalidInput.New("cannot create conversation for unknown user")
+		userID, err := s.userIDProvider.UserID(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("get user id: %w", err)
 		}
 
 		cnv, err := domain.NewConversation(userID, text[:min(16, len(text))])
