@@ -21,7 +21,13 @@ func (m *Messages) Store(ctx context.Context, msg *domain.Message) error {
 		INSERT INTO messages (id, conversation_id, parent_message_id, role, text)
 		VALUES ($1, $2, $3, $4, $5)
 		RETURNING created_at;
-	`).Scan(
+	`,
+		adapter.Hash(msg.ID),
+		msg.ConversationID,
+		adapter.Hash(msg.ParentID),
+		adapter.Role(msg.Role),
+		msg.Text,
+	).Scan(
 		&msg.CreatedAt,
 	); err != nil {
 		return fmt.Errorf("query row: %w", err)
