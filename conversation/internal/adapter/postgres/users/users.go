@@ -1,12 +1,12 @@
 package users
 
 import (
-	"fmt"
-	"time"
-	"github.com/zhmlst/assistant/go/postgres"
-	"github.com/zhmlst/assistant/conversation/internal/domain"
-	"github.com/google/uuid"
 	"context"
+	"fmt"
+	"github.com/google/uuid"
+	"github.com/zhmlst/assistant/conversation/internal/domain"
+	"github.com/zhmlst/assistant/go/postgres"
+	"time"
 )
 
 type Users struct {
@@ -18,7 +18,7 @@ func New(pool postgres.Pool) *Users {
 }
 
 func (u *Users) ByID(ctx context.Context, id uuid.UUID) (*domain.User, error) {
-	usr := domain.User{ID:id}
+	usr := domain.User{ID: id}
 	if err := u.pool.QueryRow(ctx, `
 		SELECT created_at, updated_at, deleted_at FROM users
 		WHERE id = $1
@@ -63,7 +63,7 @@ func (u *Users) Store(ctx context.Context, usr *domain.User) error {
 		&usr.UpdatedAt,
 		(*nullableTime)(&usr.DeletedAt),
 	); err != nil {
-		return  fmt.Errorf("scan row: %w", err)
+		return fmt.Errorf("scan row: %w", err)
 	}
 
 	return nil

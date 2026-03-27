@@ -28,6 +28,7 @@ $(GOPATH)/bin/protoc-gen-go-grpc:
 gen: $(GOPATH)/bin/buf $(GOPATH)/bin/protoc-gen-go $(GOPATH)/bin/protoc-gen-go-grpc $(GOPATH)/bin/stringer
 	buf generate .. --template ../buf.gen.yaml --path ../proto/conversation
 	go generate ./...
+	gofmt -w .
 	go mod tidy
 
 .PHONY: postgres

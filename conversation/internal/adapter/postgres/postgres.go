@@ -1,9 +1,9 @@
 package postgres
 
 import (
-	"github.com/zhmlst/assistant/conversation/internal/domain"
-	"fmt"
 	"database/sql/driver"
+	"fmt"
+	"github.com/zhmlst/assistant/conversation/internal/domain"
 )
 
 type Role domain.Role

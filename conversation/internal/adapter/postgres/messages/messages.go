@@ -3,9 +3,9 @@ package messages
 import (
 	"context"
 	"fmt"
+	adapter "github.com/zhmlst/assistant/conversation/internal/adapter/postgres"
 	"github.com/zhmlst/assistant/conversation/internal/domain"
 	"github.com/zhmlst/assistant/go/postgres"
-	adapter "github.com/zhmlst/assistant/conversation/internal/adapter/postgres"
 )
 
 type Messages struct {

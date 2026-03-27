@@ -3,9 +3,9 @@ package conversations
 import (
 	"context"
 	"fmt"
-	"github.com/zhmlst/assistant/go/postgres"
-	"github.com/zhmlst/assistant/conversation/internal/domain"
 	"github.com/google/uuid"
+	"github.com/zhmlst/assistant/conversation/internal/domain"
+	"github.com/zhmlst/assistant/go/postgres"
 )
 
 type Conversations struct {
