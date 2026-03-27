@@ -33,9 +33,13 @@ gen: $(GOPATH)/bin/buf $(GOPATH)/bin/protoc-gen-go $(GOPATH)/bin/protoc-gen-go-g
 
 .PHONY: postgres
 postgres:
-	$(DOCKER) inspect postgres > /dev/null 2>&1 || \
-		$(DOCKER) run -d --name postgres -e POSTGRES_PASSWORD=$(POSTGRES_PASS) -p 5432:5432 docker.io/library/postgres:17-alpine
-	$(DOCKER) start postgres
+	@if [ "$$($(DOCKER) ps -q -f 'name=^assistant-postgres$$')" ]; then \
+		:; \
+	elif [ "$$($(DOCKER) ps -qa -f 'name=^assistant-postgres$$')" ]; then \
+		$(DOCKER) start assistant-postgres; \
+	else \
+		$(DOCKER) run -d --name assistant-postgres -e POSTGRES_PASSWORD=2345 -p 5432:5432 docker.io/library/postgres:17-alpine ; \
+	fi
 
 .PHONY: run
 run: gen postgres
