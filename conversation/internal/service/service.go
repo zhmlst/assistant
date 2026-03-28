@@ -18,6 +18,7 @@ type Users interface {
 }
 
 type Conversations interface {
+	ByID(ctx context.Context, id uuid.UUID) (*domain.Conversation, error)
 	Store(ctx context.Context, cnv *domain.Conversation) error
 	Delete(ctx context.Context, id uuid.UUID) error
 }
@@ -145,4 +146,12 @@ func (s *Service) DeleteMessage(
 
 		return nil
 	})
+}
+
+func (s *Service) GetConversation(ctx context.Context, id uuid.UUID) (*domain.Conversation, error) {
+	cnv, err := s.conversations.ByID(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("restore conversation by id: %w", err)
+	}
+	return cnv, nil
 }

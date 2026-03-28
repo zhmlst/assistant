@@ -16,6 +16,11 @@ import (
 )
 
 type Service interface {
+	GetConversation(
+		ctx context.Context,
+		id uuid.UUID,
+	) (*domain.Conversation, error)
+
 	CreateUser(
 		ctx context.Context,
 	) (*domain.User, error)
@@ -112,7 +117,24 @@ func (h *Handler) UserID(ctx context.Context) (uuid.UUID, error) {
 }
 
 func (h *Handler) GetConversation(ctx context.Context, req *conversationv1.GetConversationRequest) (*conversationv1.Conversation, error) {
-	return nil, status.Error(codes.Unimplemented, "method GetConversation not implemented")
+	cnvID, err := uuid.FromBytes(req.Id)
+	if err != nil {
+		return nil, fmt.Errorf("convert conversation id to uuid: %w", err)
+	}
+
+	cnv, err := h.service.GetConversation(ctx, cnvID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &conversationv1.Conversation{
+		Id:          cnv.ID[:],
+		UserId:      cnv.UserID[:],
+		Title:       cnv.Title,
+		Preferences: &conversationv1.Conversation_Preferences{},
+		CreateTime:  timestamppb.New(cnv.CreatedAt),
+		UpdateTime:  timestamppb.New(cnv.UpdatedAt),
+	}, nil
 }
 
 func (h *Handler) ListConversations(ctx context.Context, req *conversationv1.ListConversationsRequest) (*conversationv1.ListConversationsResponse, error) {
@@ -141,7 +163,7 @@ func (h *Handler) CreateMessage(
 	if len(req.ConversationId) > 0 {
 		conversationID, err = uuid.FromBytes(req.ConversationId)
 		if err != nil {
-			return nil, fmt.Errorf("parse conversation id: %w", err)
+			return nil, fmt.Errorf("convert conversation id to uuid: %w", err)
 		}
 	}
 
@@ -187,7 +209,7 @@ func (h *Handler) CreateMessage(
 func (h *Handler) DeleteMessage(ctx context.Context, req *conversationv1.DeleteMessageRequest) (*emptypb.Empty, error) {
 	conversationID, err := uuid.ParseBytes(req.ConversationId)
 	if err != nil {
-		return nil, fmt.Errorf("parse conversation id: %w", err)
+		return nil, fmt.Errorf("convert conversation id to uuid: %w", err)
 	}
 
 	id, err := domain.HashFromBytes(req.Id)

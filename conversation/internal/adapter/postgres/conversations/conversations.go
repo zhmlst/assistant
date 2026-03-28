@@ -48,3 +48,23 @@ func (c *Conversations) Delete(ctx context.Context, id uuid.UUID) error {
 
 	return nil
 }
+
+func (c *Conversations) ByID(ctx context.Context, id uuid.UUID) (*domain.Conversation, error) {
+	cnv := domain.Conversation{ID: id}
+
+	if err := c.pool.QueryRow(ctx, `
+		SELECT user_id, title, created_at, updated_at FROM conversations
+		WHERE id = $1
+	`,
+		id,
+	).Scan(
+		&cnv.UserID,
+		&cnv.Title,
+		&cnv.CreatedAt,
+		&cnv.UpdatedAt,
+	); err != nil {
+		return nil, fmt.Errorf("query row: %w", err)
+	}
+
+	return &cnv, nil
+}
