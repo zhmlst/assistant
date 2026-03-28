@@ -155,3 +155,11 @@ func (s *Service) GetConversation(ctx context.Context, id uuid.UUID) (*domain.Co
 	}
 	return cnv, nil
 }
+
+func (s *Service) GetMessage(ctx context.Context, id domain.Hash) (*domain.Message, error) {
+	msg, err := s.messages.ByID(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("restore message by id: %w", err)
+	}
+	return msg, nil
+}

@@ -16,6 +16,11 @@ import (
 )
 
 type Service interface {
+	GetMessage(
+		ctx context.Context,
+		id domain.Hash,
+	) (*domain.Message, error)
+
 	GetConversation(
 		ctx context.Context,
 		id uuid.UUID,
@@ -146,7 +151,29 @@ func (h *Handler) UpdateConversation(ctx context.Context, req *conversationv1.Up
 }
 
 func (h *Handler) GetMessage(ctx context.Context, req *conversationv1.GetMessageRequest) (*conversationv1.Message, error) {
-	return nil, status.Error(codes.Unimplemented, "method GetMessage not implemented")
+	msgID, err := domain.HashFromBytes(req.Id)
+	if err != nil {
+		return nil, fmt.Errorf("convert in bytes into hash: %w", err)
+	}
+
+	msg, err := h.service.GetMessage(ctx, msgID)
+	if err != nil {
+		return nil, err
+	}
+
+	role, err := roleToProto(msg.Role)
+	if err != nil {
+		return nil, fmt.Errorf("convert domain role to proto: %w", err)
+	}
+
+	return &conversationv1.Message{
+		Id:             msg.ID[:],
+		ParentId:       msg.ParentID[:],
+		ConversationId: msg.ConversationID[:],
+		Role:           role,
+		Text:           msg.Text,
+		CreateTime:     timestamppb.New(msg.CreatedAt),
+	}, nil
 }
 
 func (h *Handler) ListMessages(ctx context.Context, req *conversationv1.ListMessagesRequest) (*conversationv1.ListMessagesResponse, error) {
