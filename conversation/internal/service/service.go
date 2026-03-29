@@ -24,6 +24,7 @@ type Conversations interface {
 }
 
 type Messages interface {
+	Select(ctx context.Context, parentID, variantID domain.Hash, conversationID uuid.UUID) error
 	ByID(ctx context.Context, id domain.Hash) (*domain.Message, error)
 	Store(ctx context.Context, msg *domain.Message) error
 	Delete(ctx context.Context, id domain.Hash) error
@@ -162,4 +163,11 @@ func (s *Service) GetMessage(ctx context.Context, id domain.Hash) (*domain.Messa
 		return nil, fmt.Errorf("restore message by id: %w", err)
 	}
 	return msg, nil
+}
+
+func (s *Service) SelectVariant(ctx context.Context, parentID, variantID domain.Hash, conversationID uuid.UUID) error {
+	if err := s.messages.Select(ctx, parentID, variantID, conversationID); err != nil {
+		return fmt.Errorf("select variant: %w", err)
+	}
+	return nil
 }

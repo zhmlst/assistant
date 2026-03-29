@@ -58,7 +58,7 @@ CREATE UNIQUE INDEX idx_one_root_per_conversation
 ON messages (conversation_id) 
 WHERE parent_message_id IS NULL;
 
-CREATE TABLE fork (
+CREATE TABLE forks (
 	parent_message_id         BYTEA NOT NULL,
 	selected_child_message_id BYTEA NOT NULL,
 	conversation_id           UUID NOT NULL,
@@ -70,7 +70,7 @@ CREATE TABLE fork (
 );
 
 -- +goose Down
-DROP TABLE fork;
+DROP TABLE forks;
 DROP TABLE messages;
 DROP TABLE conversations;
 DROP TABLE users;

@@ -3,6 +3,7 @@ package messages
 import (
 	"context"
 	"fmt"
+	"github.com/google/uuid"
 	adapter "github.com/zhmlst/assistant/conversation/internal/adapter/postgres"
 	"github.com/zhmlst/assistant/conversation/internal/domain"
 	"github.com/zhmlst/assistant/go/postgres"
@@ -70,5 +71,18 @@ func (m *Messages) Delete(ctx context.Context, id domain.Hash) error {
 		return fmt.Errorf("exec: %w", err)
 	}
 
+	return nil
+}
+
+func (m *Messages) Select(ctx context.Context, parentID, variantID domain.Hash, conversation_id uuid.UUID) error {
+	_, err := m.pool.Exec(ctx, `
+		INSERT INTO forks (parent_message_id, selected_child_message_id, conversation_id)
+		VALUES ($1, $2, $3)
+	`,
+		adapter.Hash(parentID), adapter.Hash(variantID), conversation_id,
+	)
+	if err != nil {
+		return fmt.Errorf("pool exec: %w", err)
+	}
 	return nil
 }

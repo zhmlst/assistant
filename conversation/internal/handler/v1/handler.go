@@ -16,6 +16,13 @@ import (
 )
 
 type Service interface {
+	SelectVariant(
+		ctx context.Context,
+		parentID domain.Hash,
+		variantID domain.Hash,
+		conversationID uuid.UUID,
+	) error
+
 	GetMessage(
 		ctx context.Context,
 		id domain.Hash,
@@ -264,7 +271,26 @@ func (h *Handler) ListVariants(ctx context.Context, req *conversationv1.ListVari
 }
 
 func (h *Handler) SelectVariant(ctx context.Context, req *conversationv1.SelectVariantRequest) (*emptypb.Empty, error) {
-	return nil, status.Error(codes.Unimplemented, "method SelectVariant not implemented")
+	conversationID, err := uuid.FromBytes(req.ConversationId)
+	if err != nil {
+		return nil, fmt.Errorf("conversation id from bytes: %w", err)
+	}
+
+	parentID, err := domain.HashFromBytes(req.ParentMessageId)
+	if err != nil {
+		return nil, fmt.Errorf("parent id from bytes: %w", err)
+	}
+
+	variantID, err := domain.HashFromBytes(req.VariantMessageId)
+	if err != nil {
+		return nil, fmt.Errorf("variant id from bytes: %w", err)
+	}
+
+	if err := h.service.SelectVariant(ctx, parentID, variantID, conversationID); err != nil {
+		return nil, err
+	}
+
+	return &emptypb.Empty{}, nil
 }
 
 func (h *Handler) GetUser(ctx context.Context, req *conversationv1.GetUserRequest) (*conversationv1.User, error) {
