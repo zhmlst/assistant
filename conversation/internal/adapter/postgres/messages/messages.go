@@ -7,6 +7,7 @@ import (
 	adapter "github.com/zhmlst/assistant/conversation/internal/adapter/postgres"
 	"github.com/zhmlst/assistant/conversation/internal/domain"
 	"github.com/zhmlst/assistant/go/postgres"
+	"iter"
 )
 
 type Messages struct {
@@ -85,4 +86,62 @@ func (m *Messages) Select(ctx context.Context, parentID, variantID domain.Hash, 
 		return fmt.Errorf("pool exec: %w", err)
 	}
 	return nil
+}
+
+func (m *Messages) History(ctx context.Context, conversationID uuid.UUID, anchorID domain.Hash) iter.Seq2[*domain.Message, error] {
+	return func(yield func(*domain.Message, error) bool) {
+		rows, err := m.pool.Query(ctx, `
+			WITH RECURSIVE message_tree AS (
+				SELECT id, parent_message_id, role, conversation_id, text, created_at
+				FROM messages
+				WHERE id = $1 AND conversation_id = $2
+
+				UNION ALL
+
+				SELECT m.id, m.parent_message_id, m.role, m.conversation_id, m.text, m.created_at
+				FROM messages m
+				JOIN message_tree mt ON m.id = mt.parent_message_id AND m.conversation_id = mt.conversation_id
+			)
+			SELECT id, parent_message_id, role, conversation_id, text, created_at
+			FROM message_tree
+			ORDER BY created_at ASC;
+		`,
+			adapter.Hash(anchorID), conversationID,
+		)
+		if err != nil {
+			yield(nil, err)
+			return
+		}
+		defer rows.Close()
+
+		for rows.Next() {
+			if ctx.Err() != nil {
+				goto out
+			}
+
+			var msg domain.Message
+			if err := rows.Scan(
+				(*adapter.Hash)(&msg.ID),
+				(*adapter.Hash)(&msg.ParentID),
+				(*adapter.Role)(&msg.Role),
+				&msg.ConversationID,
+				&msg.Text,
+				&msg.CreatedAt,
+			); err != nil {
+				if !yield(nil, err) {
+					return
+				}
+				continue
+			}
+
+			if !yield(&msg, nil) {
+				return
+			}
+		}
+
+	out:
+		if err := rows.Err(); err != nil {
+			yield(nil, err)
+		}
+	}
 }

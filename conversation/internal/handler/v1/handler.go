@@ -13,9 +13,16 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
+	"iter"
 )
 
 type Service interface {
+	History(
+		ctx context.Context,
+		conversationID uuid.UUID,
+		anchorID domain.Hash,
+	) iter.Seq2[*domain.Message, error]
+
 	SelectVariant(
 		ctx context.Context,
 		parentID domain.Hash,
@@ -258,8 +265,39 @@ func (h *Handler) DeleteMessage(ctx context.Context, req *conversationv1.DeleteM
 	return &emptypb.Empty{}, nil
 }
 
-func (h *Handler) GetHistory(*conversationv1.GetHistoryRequest, grpc.ServerStreamingServer[conversationv1.Message]) error {
-	return status.Error(codes.Unimplemented, "method GetHistory not implemented")
+func (h *Handler) GetHistory(req *conversationv1.GetHistoryRequest, stream grpc.ServerStreamingServer[conversationv1.Message]) error {
+	conversationID, err := uuid.FromBytes(req.ConversationId)
+	if err != nil {
+		return fmt.Errorf("conversation id from bytes: %w", err)
+	}
+
+	anchorID, err := domain.HashFromBytes(req.AnchorMessageId)
+	if err != nil {
+		return fmt.Errorf("anchor id from bytes: %w", err)
+	}
+
+	history := h.service.History(stream.Context(), conversationID, anchorID)
+	for msg, err := range history {
+		if err != nil {
+			return fmt.Errorf("next message: %w", err)
+		}
+
+		role, err := roleToProto(msg.Role)
+		if err != nil {
+			return fmt.Errorf("convert role to proto: %w", err)
+		}
+
+		stream.Send(&conversationv1.Message{
+			Id:             msg.ID[:],
+			ParentId:       msg.ParentID[:],
+			ConversationId: msg.ConversationID[:],
+			Role:           role,
+			Text:           msg.Text,
+			CreateTime:     timestamppb.New(msg.CreatedAt),
+		})
+	}
+
+	return nil
 }
 
 func (h *Handler) GetHistoryChunk(ctx context.Context, req *conversationv1.GetHistoryChunkRequest) (*conversationv1.GetHistoryChunkResponse, error) {

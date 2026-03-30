@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/zhmlst/assistant/conversation/internal/domain"
+	"iter"
 )
 
 type Transactor interface {
@@ -24,6 +25,7 @@ type Conversations interface {
 }
 
 type Messages interface {
+	History(ctx context.Context, conversationID uuid.UUID, anchorID domain.Hash) iter.Seq2[*domain.Message, error]
 	Select(ctx context.Context, parentID, variantID domain.Hash, conversationID uuid.UUID) error
 	ByID(ctx context.Context, id domain.Hash) (*domain.Message, error)
 	Store(ctx context.Context, msg *domain.Message) error
@@ -170,4 +172,8 @@ func (s *Service) SelectVariant(ctx context.Context, parentID, variantID domain.
 		return fmt.Errorf("select variant: %w", err)
 	}
 	return nil
+}
+
+func (s *Service) History(ctx context.Context, conversationID uuid.UUID, anchorID domain.Hash) iter.Seq2[*domain.Message, error] {
+	return s.messages.History(ctx, conversationID, anchorID)
 }
