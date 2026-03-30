@@ -1,12 +1,14 @@
 package domain
 
 import (
+	"context"
 	"crypto/sha256"
 	"fmt"
-	"github.com/google/uuid"
 	"hash"
 	"sync"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type User struct {
@@ -104,4 +106,12 @@ func NewMessage(
 	_ = h.Sum(m.ID[:0])
 
 	return &m, nil
+}
+
+type Transactor interface {
+	Wrap(context.Context, func(context.Context) error) error
+}
+
+type UserIDProvider interface {
+	UserID(context.Context) (uuid.UUID, error)
 }
