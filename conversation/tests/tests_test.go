@@ -3,9 +3,11 @@
 package tests
 
 import (
+	"io"
+	"os"
 	"testing"
-	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -21,6 +23,7 @@ func Test(t *testing.T) {
 	req := testcontainers.ContainerRequest{
 		Image: "assistant-conversation",
 		Env: map[string]string{
+			"GRPC_ADDR":     "0.0.0.0:50051",
 			"POSTGRES_HOST": "172.17.0.1",
 			"POSTGRES_PORT": "5432",
 			"POSTGRES_USER": "postgres",
@@ -28,9 +31,7 @@ func Test(t *testing.T) {
 			"POSTGRES_DB":   "postgres",
 		},
 		ExposedPorts: []string{inport},
-		WaitingFor: wait.ForLog("msg=started").
-			WithOccurrence(1).
-			WithPollInterval(100 * time.Millisecond),
+		WaitingFor:   wait.ForListeningPort(inport),
 	}
 
 	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
@@ -40,15 +41,30 @@ func Test(t *testing.T) {
 	require.NoErrorf(t, err, "")
 	defer container.Terminate(ctx)
 
+	defer func() {
+		reader, err := container.Logs(ctx)
+		if err == nil {
+			io.Copy(os.Stdout, reader)
+		}
+	}()
+
 	port, err := container.MappedPort(ctx, inport)
 	require.NoErrorf(t, err, "")
 
 	conn, err := grpc.NewClient(
-		"localhost:"+port.Port(),
+		"127.0.0.1:"+port.Port(),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	require.NoErrorf(t, err, "create grpc client connection")
 
 	client := conversationv1.NewUserServiceClient(conn)
-	_ = client
+	user1, err := client.CreateUser(ctx, &conversationv1.CreateUserRequest{})
+	require.NoErrorf(t, err, "")
+
+	user2, err := client.GetUser(ctx, &conversationv1.GetUserRequest{
+		Id: user1.Id,
+	})
+	require.NoErrorf(t, err, "")
+
+	assert.Equal(t, user1, user2)
 }
