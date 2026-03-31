@@ -41,7 +41,7 @@ func New(service service) *handler {
 }
 
 func (h *handler) GetUser(ctx context.Context, req *conversationv1.GetUserRequest) (*conversationv1.User, error) {
-	usrID, err := uuid.ParseBytes(req.Id)
+	usrID, err := uuid.FromBytes(req.Id)
 	if err != nil {
 		return nil, fmt.Errorf("parse user id: %w", err)
 	}

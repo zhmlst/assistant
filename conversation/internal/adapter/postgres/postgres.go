@@ -3,6 +3,8 @@ package postgres
 import (
 	"database/sql/driver"
 	"fmt"
+	"time"
+
 	"github.com/zhmlst/assistant/conversation/internal/domain"
 )
 
@@ -44,4 +46,21 @@ func (h Hash) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return h[:], nil
+}
+
+type NullableTime time.Time
+
+func (t *NullableTime) Scan(src any) error {
+	if src == nil {
+		*t = NullableTime(time.Time{})
+		return nil
+	}
+
+	val, ok := src.(time.Time)
+	if !ok {
+		return fmt.Errorf("cannot convert %T into NullableTime, expected time.Time", src)
+	}
+
+	*t = NullableTime(val)
+	return nil
 }

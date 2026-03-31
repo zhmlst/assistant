@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/google/uuid"
+	adapter "github.com/zhmlst/assistant/conversation/internal/adapter/postgres"
 	"github.com/zhmlst/assistant/conversation/internal/domain"
 	"github.com/zhmlst/assistant/go/postgres"
 	"time"
@@ -27,7 +28,7 @@ func (u *Users) ByID(ctx context.Context, id uuid.UUID) (*domain.User, error) {
 	).Scan(
 		&usr.CreatedAt,
 		&usr.UpdatedAt,
-		&usr.DeletedAt,
+		(*adapter.NullableTime)(&usr.DeletedAt),
 	); err != nil {
 		return nil, fmt.Errorf("scan row: %w", err)
 	}
@@ -61,7 +62,7 @@ func (u *Users) Store(ctx context.Context, usr *domain.User) error {
 	).Scan(
 		&usr.CreatedAt,
 		&usr.UpdatedAt,
-		(*nullableTime)(&usr.DeletedAt),
+		(*adapter.NullableTime)(&usr.DeletedAt),
 	); err != nil {
 		return fmt.Errorf("scan row: %w", err)
 	}
