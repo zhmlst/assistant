@@ -30,6 +30,8 @@ import (
 	"github.com/zhmlst/assistant/go/logger"
 	"github.com/zhmlst/assistant/go/postgres"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/health"
+	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
 )
 
@@ -92,10 +94,13 @@ func run() (cause error) {
 	conversationHandler := conversationhandler.New(conversationService)
 	messageHandler := messagehandler.New(messageService)
 
+	healthHandler := health.NewServer()
+
 	server := grpc.NewServer()
 	conversationv1.RegisterUserServiceServer(server, userHandler)
 	conversationv1.RegisterConversationServiceServer(server, conversationHandler)
 	conversationv1.RegisterMessageServiceServer(server, messageHandler)
+	grpc_health_v1.RegisterHealthServer(server, healthHandler)
 	reflection.Register(server)
 
 	addr, err := net.ResolveTCPAddr("tcp", cfg.GRPC.Addr)
