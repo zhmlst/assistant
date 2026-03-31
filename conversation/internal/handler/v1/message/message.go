@@ -32,6 +32,7 @@ type service interface {
 
 	GetMessage(
 		ctx context.Context,
+		conversationID uuid.UUID,
 		id domain.Hash,
 	) (*domain.Message, error)
 
@@ -64,12 +65,17 @@ func New(
 }
 
 func (h *handler) GetMessage(ctx context.Context, req *conversationv1.GetMessageRequest) (*conversationv1.Message, error) {
+	cnvID, err := uuid.FromBytes(req.ConversationId)
+	if err != nil {
+		return nil, fmt.Errorf("conversation id from bytes: %w", err)
+	}
+
 	msgID, err := domain.HashFromBytes(req.Id)
 	if err != nil {
 		return nil, fmt.Errorf("convert in bytes into hash: %w", err)
 	}
 
-	msg, err := h.service.GetMessage(ctx, msgID)
+	msg, err := h.service.GetMessage(ctx, cnvID, msgID)
 	if err != nil {
 		return nil, err
 	}

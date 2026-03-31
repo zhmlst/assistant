@@ -13,7 +13,7 @@ import (
 type Storage interface {
 	History(ctx context.Context, conversationID uuid.UUID, anchorID domain.Hash) iter.Seq2[*domain.Message, error]
 	Select(ctx context.Context, parentID, variantID domain.Hash, conversationID uuid.UUID) error
-	ByID(ctx context.Context, id domain.Hash) (*domain.Message, error)
+	ByID(ctx context.Context, conversationID uuid.UUID, id domain.Hash) (*domain.Message, error)
 	Store(ctx context.Context, msg *domain.Message) error
 	Delete(ctx context.Context, id domain.Hash) error
 }
@@ -82,7 +82,7 @@ func (s *service) DeleteMessage(
 	id domain.Hash,
 	conversationID uuid.UUID,
 ) error {
-	msg, err := s.storage.ByID(ctx, id)
+	msg, err := s.storage.ByID(ctx, conversationID, id)
 	if err != nil {
 		return fmt.Errorf("get message: %w", err)
 	}
@@ -102,8 +102,8 @@ func (s *service) DeleteMessage(
 	})
 }
 
-func (s *service) GetMessage(ctx context.Context, id domain.Hash) (*domain.Message, error) {
-	msg, err := s.storage.ByID(ctx, id)
+func (s *service) GetMessage(ctx context.Context, conversationID uuid.UUID, id domain.Hash) (*domain.Message, error) {
+	msg, err := s.storage.ByID(ctx, conversationID, id)
 	if err != nil {
 		return nil, fmt.Errorf("restore message by id: %w", err)
 	}

@@ -469,10 +469,11 @@ func (x *Message) GetCreateTime() *timestamppb.Timestamp {
 }
 
 type GetMessageRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            []byte                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	ConversationId []byte                 `protobuf:"bytes,1,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
+	Id             []byte                 `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *GetMessageRequest) Reset() {
@@ -503,6 +504,13 @@ func (x *GetMessageRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use GetMessageRequest.ProtoReflect.Descriptor instead.
 func (*GetMessageRequest) Descriptor() ([]byte, []int) {
 	return file_conversation_v1_conversation_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *GetMessageRequest) GetConversationId() []byte {
+	if x != nil {
+		return x.ConversationId
+	}
+	return nil
 }
 
 func (x *GetMessageRequest) GetId() []byte {
@@ -1466,9 +1474,10 @@ const file_conversation_v1_conversation_proto_rawDesc = "" +
 	"\x04role\x18\x04 \x01(\x0e2\x15.conversation.v1.RoleR\x04role\x12\x12\n" +
 	"\x04text\x18\x05 \x01(\tR\x04text\x12;\n" +
 	"\vcreate_time\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
-	"createTime\"#\n" +
-	"\x11GetMessageRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\fR\x02id\"\xad\x01\n" +
+	"createTime\"L\n" +
+	"\x11GetMessageRequest\x12'\n" +
+	"\x0fconversation_id\x18\x01 \x01(\fR\x0econversationId\x12\x0e\n" +
+	"\x02id\x18\x02 \x01(\fR\x02id\"\xad\x01\n" +
 	"\x13ListMessagesRequest\x12'\n" +
 	"\x0fconversation_id\x18\x01 \x01(\fR\x0econversationId\x12\x1b\n" +
 	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x1d\n" +

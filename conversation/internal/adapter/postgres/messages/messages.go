@@ -38,14 +38,15 @@ func (m *Messages) Store(ctx context.Context, msg *domain.Message) error {
 	return nil
 }
 
-func (m *Messages) ByID(ctx context.Context, id domain.Hash) (*domain.Message, error) {
+func (m *Messages) ByID(ctx context.Context, conversationID uuid.UUID, id domain.Hash) (*domain.Message, error) {
 	var msg domain.Message
 
 	if err := m.pool.QueryRow(ctx, `
 		SELECT id, conversation_id, parent_message_id, role, text, created_at
 		FROM messages
-		WHERE id = $1
+		WHERE conversation_id = $1 AND id = $2
 	`,
+		conversationID,
 		adapter.Hash(id),
 	).Scan(
 		(*adapter.Hash)(&msg.ID),
