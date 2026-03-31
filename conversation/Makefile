@@ -54,4 +54,8 @@ ui: $(GOPATH)/bin/grpcui
 
 .PHONY: image
 image: gen
-	cd .. && podman build -t conversation -f ./conversation/Dockerfile .
+	cd .. && $(DOCKER) build -t assistant-conversation -f ./conversation/Dockerfile .
+
+.PHONY: test
+test: image postgres
+	go test -tags=e2e ./...
