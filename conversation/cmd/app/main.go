@@ -86,7 +86,7 @@ func run() (cause error) {
 	conversationStorage := conversationstorage.New(pgpool)
 	messageStorage := messagestorage.New(pgpool)
 
-	userService := userservice.New(userStorage)
+	userService := userservice.New(pgpool, userStorage)
 	conversationService := conversationservice.New(pgpool, conversationStorage)
 	messageService := messageservice.New(pgpool, messageStorage, v1.UserIDProvider{}, conversationStorage)
 

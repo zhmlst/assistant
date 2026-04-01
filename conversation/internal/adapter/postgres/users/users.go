@@ -21,11 +21,12 @@ func New(pool postgres.Pool) *Users {
 func (u *Users) ByID(ctx context.Context, id uuid.UUID) (*domain.User, error) {
 	usr := domain.User{ID: id}
 	if err := u.pool.QueryRow(ctx, `
-		SELECT created_at, updated_at, deleted_at FROM users
+		SELECT username, created_at, updated_at, deleted_at FROM users
 		WHERE id = $1
 	`,
 		id,
 	).Scan(
+		&usr.Username,
 		&usr.CreatedAt,
 		&usr.UpdatedAt,
 		(*adapter.NullableTime)(&usr.DeletedAt),
@@ -54,11 +55,12 @@ func (t *nullableTime) Scan(src any) error {
 
 func (u *Users) Store(ctx context.Context, usr *domain.User) error {
 	if err := u.pool.QueryRow(ctx, `
-		INSERT INTO users (id)
-		VALUES ($1)
+		INSERT INTO users (id, username)
+		VALUES ($1, $2)
 		RETURNING created_at, updated_at, deleted_at
 	`,
 		usr.ID,
+		usr.Username,
 	).Scan(
 		&usr.CreatedAt,
 		&usr.UpdatedAt,
@@ -67,6 +69,26 @@ func (u *Users) Store(ctx context.Context, usr *domain.User) error {
 		return fmt.Errorf("scan row: %w", err)
 	}
 
+	return nil
+}
+
+func (u *Users) Update(ctx context.Context, usr *domain.User) error {
+	if err := u.pool.QueryRow(ctx, `
+		UPDATE users
+		SET username = $1
+		WHERE id = $2
+		RETURNING username, created_at, updated_at, deleted_at
+	`,
+		usr.Username,
+		usr.ID,
+	).Scan(
+		&usr.Username,
+		&usr.CreatedAt,
+		&usr.UpdatedAt,
+		(*adapter.NullableTime)(&usr.DeletedAt),
+	); err != nil {
+		return fmt.Errorf("query row scan: %w", err)
+	}
 	return nil
 }
 

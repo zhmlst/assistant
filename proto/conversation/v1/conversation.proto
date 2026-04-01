@@ -148,9 +148,10 @@ service MessageService {
 
 message User {
   bytes id = 1;
-  google.protobuf.Timestamp create_time = 2;
-  google.protobuf.Timestamp update_time = 3;
-  google.protobuf.Timestamp delete_time = 4;
+  string username = 2;
+  google.protobuf.Timestamp create_time = 3;
+  google.protobuf.Timestamp update_time = 4;
+  google.protobuf.Timestamp delete_time = 5;
 }
 
 message GetUserRequest {
@@ -158,9 +159,12 @@ message GetUserRequest {
 }
 
 message CreateUserRequest {
+  string username = 1;
 }
 
 message UpdateUserRequest {
+  User user = 1;
+  google.protobuf.FieldMask field_mask = 2;
 }
 
 message DeleteUserRequest {

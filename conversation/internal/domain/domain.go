@@ -11,11 +11,28 @@ import (
 	"github.com/google/uuid"
 )
 
+type UserFieldMask uint64
+
+const (
+	UserFieldUsername UserFieldMask = 1 << iota
+)
+
 type User struct {
 	ID        uuid.UUID
+	Username  string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt time.Time
+}
+
+func NewUser(username string) (*User, error) {
+	now := time.Now()
+	return &User{
+		ID:        uuid.New(),
+		Username:  username,
+		CreatedAt: now,
+		UpdatedAt: now,
+	}, nil
 }
 
 type Preferences struct {
