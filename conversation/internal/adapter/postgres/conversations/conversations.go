@@ -35,20 +35,6 @@ func (c *Conversations) Store(ctx context.Context, cnv *domain.Conversation) err
 	return nil
 }
 
-func (c *Conversations) Delete(ctx context.Context, id uuid.UUID) error {
-	_, err := c.pool.Exec(ctx, `
-		DELETE FROM conversations
-		WHERE id = $1
-	`,
-		id,
-	)
-	if err != nil {
-		return fmt.Errorf("exec: %w", err)
-	}
-
-	return nil
-}
-
 func (c *Conversations) ByID(ctx context.Context, id uuid.UUID) (*domain.Conversation, error) {
 	cnv := domain.Conversation{ID: id}
 
@@ -67,4 +53,35 @@ func (c *Conversations) ByID(ctx context.Context, id uuid.UUID) (*domain.Convers
 	}
 
 	return &cnv, nil
+}
+
+func (c *Conversations) Update(ctx context.Context, cnv *domain.Conversation) error {
+	if err := c.pool.QueryRow(ctx, `
+		UPDATE conversations
+		SET title = $1
+		WHERE id = $2
+		RETURNING updated_at
+	`,
+		cnv.Title,
+		cnv.ID,
+	).Scan(
+		&cnv.UpdatedAt,
+	); err != nil {
+		return fmt.Errorf("query row scan: %w", err)
+	}
+	return nil
+}
+
+func (c *Conversations) Delete(ctx context.Context, id uuid.UUID) error {
+	_, err := c.pool.Exec(ctx, `
+		DELETE FROM conversations
+		WHERE id = $1
+	`,
+		id,
+	)
+	if err != nil {
+		return fmt.Errorf("exec: %w", err)
+	}
+
+	return nil
 }

@@ -25,6 +25,12 @@ func DefaultPreferences() *Preferences {
 	return &Preferences{}
 }
 
+type ConversationFieldMask uint64
+
+const (
+	ConversationFieldTitle ConversationFieldMask = 1 << iota
+)
+
 type Conversation struct {
 	ID          uuid.UUID
 	UserID      uuid.UUID
