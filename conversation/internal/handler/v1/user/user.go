@@ -59,6 +59,7 @@ func (h *handler) GetUser(ctx context.Context, req *conversationv1.GetUserReques
 
 	return &conversationv1.User{
 		Id:         usr.ID[:],
+		Username:   usr.Username,
 		CreateTime: timestamppb.New(usr.CreatedAt),
 		UpdateTime: timestamppb.New(usr.UpdatedAt),
 		DeleteTime: timestamppb.New(usr.DeletedAt),
@@ -73,6 +74,7 @@ func (h *handler) CreateUser(ctx context.Context, req *conversationv1.CreateUser
 
 	return &conversationv1.User{
 		Id:         usr.ID[:],
+		Username:   usr.Username,
 		CreateTime: timestamppb.New(usr.CreatedAt),
 		UpdateTime: timestamppb.New(usr.UpdatedAt),
 		DeleteTime: timestamppb.New(usr.DeletedAt),

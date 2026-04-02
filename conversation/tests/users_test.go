@@ -1,6 +1,6 @@
 //go:build e2e
 
-package tests
+package users_test
 
 import (
 	"io"
@@ -14,9 +14,13 @@ import (
 	conversationv1 "github.com/zhmlst/assistant/conversation/pkg/conversation/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/types/known/fieldmaskpb"
 )
 
-func Test(t *testing.T) {
+func setupClient() {
+}
+
+func TestUsers(t *testing.T) {
 	ctx := t.Context()
 
 	const inport = "50051/tcp"
@@ -58,13 +62,41 @@ func Test(t *testing.T) {
 	require.NoErrorf(t, err, "create grpc client connection")
 
 	client := conversationv1.NewUserServiceClient(conn)
-	user1, err := client.CreateUser(ctx, &conversationv1.CreateUserRequest{})
-	require.NoErrorf(t, err, "")
 
-	user2, err := client.GetUser(ctx, &conversationv1.GetUserRequest{
-		Id: user1.Id,
+	t.Run("create user", func(t *testing.T) {
+		user1, err := client.CreateUser(ctx, &conversationv1.CreateUserRequest{
+			Username: "jonh doe",
+		})
+		require.NoErrorf(t, err, "")
+
+		user2, err := client.GetUser(ctx, &conversationv1.GetUserRequest{
+			Id: user1.Id,
+		})
+		require.NoErrorf(t, err, "")
+
+		assert.Equal(t, user1, user2)
 	})
-	require.NoErrorf(t, err, "")
 
-	assert.Equal(t, user1, user2)
+	t.Run("update user", func(t *testing.T) {
+		user1, err := client.CreateUser(ctx, &conversationv1.CreateUserRequest{
+			Username: "john doe",
+		})
+		require.NoErrorf(t, err, "")
+
+		_, err = client.UpdateUser(ctx, &conversationv1.UpdateUserRequest{
+			User: &conversationv1.User{
+				Id:       user1.Id,
+				Username: "lolkek",
+			},
+			FieldMask: &fieldmaskpb.FieldMask{Paths: []string{"username"}},
+		})
+		require.NoErrorf(t, err, "")
+
+		user2, err := client.GetUser(ctx, &conversationv1.GetUserRequest{
+			Id: user1.Id,
+		})
+		require.NoErrorf(t, err, "")
+
+		assert.Equal(t, "lolkek", user2.Username)
+	})
 }
