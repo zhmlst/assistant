@@ -138,3 +138,10 @@ type Transactor interface {
 type UserIDProvider interface {
 	UserID(context.Context) (uuid.UUID, error)
 }
+
+type ListParameters struct {
+	PageSize  int
+	PageToken []byte
+	Filter    string
+	OrderBy   string
+}

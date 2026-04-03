@@ -10,6 +10,7 @@ import (
 
 type Storage interface {
 	ByID(ctx context.Context, id uuid.UUID) (*domain.Conversation, error)
+	List(ctx context.Context, params domain.ListParameters) ([]domain.Conversation, []byte, error)
 	Store(ctx context.Context, cnv *domain.Conversation) error
 	Update(ctx context.Context, cnv *domain.Conversation) error
 	Delete(ctx context.Context, id uuid.UUID) error
@@ -33,6 +34,10 @@ func (s *service) ByID(ctx context.Context, id uuid.UUID) (*domain.Conversation,
 		return nil, fmt.Errorf("restore conversation by id: %w", err)
 	}
 	return cnv, nil
+}
+
+func (s *service) List(ctx context.Context, params domain.ListParameters) ([]domain.Conversation, []byte, error) {
+	return s.storage.List(ctx, params)
 }
 
 func (s *service) Update(ctx context.Context, upd *domain.Conversation, mask domain.ConversationFieldMask) error {

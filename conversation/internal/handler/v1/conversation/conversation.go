@@ -7,8 +7,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/zhmlst/assistant/conversation/internal/domain"
 	conversationv1 "github.com/zhmlst/assistant/conversation/pkg/conversation/v1"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -18,6 +16,15 @@ type service interface {
 		ctx context.Context,
 		id uuid.UUID,
 	) (*domain.Conversation, error)
+
+	List(
+		ctx context.Context,
+		params domain.ListParameters,
+	) (
+		cnvs []domain.Conversation,
+		nextPageToken []byte,
+		err error,
+	)
 
 	Update(
 		ctx context.Context,
@@ -37,8 +44,39 @@ func New(service service) *handler {
 	}
 }
 
-func (h *handler) ListConversations(ctx context.Context, req *conversationv1.ListConversationsRequest) (*conversationv1.ListConversationsResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method ListConversations not implemented")
+func conversationsToProto(cnvs []domain.Conversation) []*conversationv1.Conversation {
+	res := make([]*conversationv1.Conversation, len(cnvs))
+	for i := range cnvs {
+		res[i] = &conversationv1.Conversation{
+			Id:          cnvs[i].ID[:],
+			UserId:      cnvs[i].UserID[:],
+			Title:       cnvs[i].Title,
+			Preferences: &conversationv1.Conversation_Preferences{},
+			CreateTime:  timestamppb.New(cnvs[i].CreatedAt),
+			UpdateTime:  timestamppb.New(cnvs[i].UpdatedAt),
+		}
+	}
+	return res
+}
+
+func (h *handler) ListConversations(
+	ctx context.Context,
+	req *conversationv1.ListConversationsRequest,
+) (*conversationv1.ListConversationsResponse, error) {
+	cnvs, token, err := h.service.List(ctx, domain.ListParameters{
+		PageSize:  int(req.PageSize),
+		PageToken: req.PageToken,
+		Filter:    req.Filter,
+		OrderBy:   req.OrderBy,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &conversationv1.ListConversationsResponse{
+		Conversations: conversationsToProto(cnvs),
+		NextPageToken: token,
+	}, nil
 }
 
 func fieldMaskFromProto(proto *fieldmaskpb.FieldMask) (domain.ConversationFieldMask, error) {

@@ -55,6 +55,41 @@ func (c *Conversations) ByID(ctx context.Context, id uuid.UUID) (*domain.Convers
 	return &cnv, nil
 }
 
+func (c *Conversations) List(ctx context.Context, params domain.ListParameters) ([]domain.Conversation, []byte, error) {
+	rows, err := c.pool.Query(ctx, `
+		SELECT id, user_id, title, created_at, updated_at
+		FROM conversations
+		LIMIT $1
+	`,
+		max(params.PageSize, -params.PageSize),
+	)
+	if err != nil {
+		return nil, nil, fmt.Errorf("pool query: %w", err)
+	}
+	defer rows.Close()
+
+	list := make([]domain.Conversation, 0, max(params.PageSize, -params.PageSize))
+	for rows.Next() {
+		var cnv domain.Conversation
+		if err := rows.Scan(
+			&cnv.ID,
+			&cnv.UserID,
+			&cnv.Title,
+			&cnv.CreatedAt,
+			&cnv.UpdatedAt,
+		); err != nil {
+			return nil, nil, fmt.Errorf("scan row: %w", err)
+		}
+		list = append(list, cnv)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, nil, fmt.Errorf("iterate rows: %w", err)
+	}
+
+	return list, nil, nil
+}
+
 func (c *Conversations) Update(ctx context.Context, cnv *domain.Conversation) error {
 	if err := c.pool.QueryRow(ctx, `
 		UPDATE conversations
