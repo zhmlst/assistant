@@ -14,6 +14,7 @@ import (
 )
 
 func TestUsers(t *testing.T) {
+	const domain = "user:"
 	ctx := t.Context()
 
 	conn, err := grpc.NewClient(
@@ -26,7 +27,7 @@ func TestUsers(t *testing.T) {
 
 	t.Run("create user", func(t *testing.T) {
 		user1, err := client.CreateUser(ctx, &conversationv1.CreateUserRequest{
-			Username: "jonh doe",
+			Username: domain + "jonh doe",
 		})
 		require.NoErrorf(t, err, "")
 
@@ -40,14 +41,14 @@ func TestUsers(t *testing.T) {
 
 	t.Run("update user", func(t *testing.T) {
 		user1, err := client.CreateUser(ctx, &conversationv1.CreateUserRequest{
-			Username: "john doe",
+			Username: domain + "john doe",
 		})
 		require.NoErrorf(t, err, "")
 
 		_, err = client.UpdateUser(ctx, &conversationv1.UpdateUserRequest{
 			User: &conversationv1.User{
 				Id:       user1.Id,
-				Username: "lolkek",
+				Username: domain + "lolkek",
 			},
 			FieldMask: &fieldmaskpb.FieldMask{Paths: []string{"username"}},
 		})
@@ -58,6 +59,6 @@ func TestUsers(t *testing.T) {
 		})
 		require.NoErrorf(t, err, "")
 
-		assert.Equal(t, "lolkek", user2.Username)
+		assert.Equal(t, domain+"lolkek", user2.Username)
 	})
 }

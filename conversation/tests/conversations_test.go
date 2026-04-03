@@ -15,6 +15,7 @@ import (
 )
 
 func TestConversations(t *testing.T) {
+	const domain = "conversation:"
 	ctx := t.Context()
 
 	conn, err := grpc.NewClient(
@@ -24,7 +25,7 @@ func TestConversations(t *testing.T) {
 	require.NoErrorf(t, err, "")
 
 	usersClient := conversationv1.NewUserServiceClient(conn)
-	usr, err := usersClient.CreateUser(ctx, &conversationv1.CreateUserRequest{Username: "conversations:john doe"})
+	usr, err := usersClient.CreateUser(ctx, &conversationv1.CreateUserRequest{Username: domain + "john doe"})
 	require.NoErrorf(t, err, "")
 
 	client := conversationv1.NewConversationServiceClient(conn)
@@ -35,7 +36,7 @@ func TestConversations(t *testing.T) {
 
 		msg, err := messagesClient.CreateMessage(ctx, &conversationv1.CreateMessageRequest{
 			Role: conversationv1.Role_ROLE_SYSTEM,
-			Text: "conversations:prompt",
+			Text: domain + "prompt",
 		})
 		require.NoErrorf(t, err, "")
 
