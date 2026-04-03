@@ -1,4 +1,6 @@
-package tests_test
+//go:build e2e
+
+package tests
 
 import (
 	"context"
