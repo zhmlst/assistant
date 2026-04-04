@@ -3,11 +3,11 @@ package domain
 import (
 	"context"
 	"crypto/sha256"
-	"fmt"
 	"hash"
 	"sync"
 	"time"
 
+	"github.com/zhmlst/assistant/go/lib"
 	"github.com/google/uuid"
 )
 
@@ -80,21 +80,9 @@ const (
 	RoleSystem
 	RoleUser
 )
-
-type Hash [32]byte
-
-var NilHash Hash
-
-func HashFromBytes(b []byte) (Hash, error) {
-	if len(b) < len(NilHash) {
-		return NilHash, fmt.Errorf("invalid hash length %d", len(b))
-	}
-	return Hash(b), nil
-}
-
 type Message struct {
-	ID             Hash
-	ParentID       Hash
+	ID             lib.Hash
+	ParentID       lib.Hash
 	ConversationID uuid.UUID
 	Text           string
 	Role           Role
@@ -106,7 +94,7 @@ var hashes = sync.Pool{
 }
 
 func NewMessage(
-	parentID Hash,
+	parentID lib.Hash,
 	conversationID uuid.UUID,
 	text string,
 	role Role,
