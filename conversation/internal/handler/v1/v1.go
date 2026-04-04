@@ -6,36 +6,8 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/zhmlst/assistant/conversation/internal/domain"
-	conversationv1 "github.com/zhmlst/assistant/conversation/pkg/conversation/v1"
 	"google.golang.org/grpc/metadata"
 )
-
-func RoleFromProto(r conversationv1.Role) (domain.Role, error) {
-	switch r {
-	case conversationv1.Role_ROLE_ASSISTANT:
-		return domain.RoleAssistant, nil
-	case conversationv1.Role_ROLE_SYSTEM:
-		return domain.RoleSystem, nil
-	case conversationv1.Role_ROLE_USER:
-		return domain.RoleUser, nil
-	default:
-		return 0, fmt.Errorf("invalid proto role %v", r)
-	}
-}
-
-func RoleToProto(r domain.Role) (conversationv1.Role, error) {
-	switch r {
-	case domain.RoleAssistant:
-		return conversationv1.Role_ROLE_ASSISTANT, nil
-	case domain.RoleSystem:
-		return conversationv1.Role_ROLE_SYSTEM, nil
-	case domain.RoleUser:
-		return conversationv1.Role_ROLE_USER, nil
-	default:
-		return conversationv1.Role_ROLE_UNSPECIFIED, fmt.Errorf("invalid domain role %v", r)
-	}
-}
 
 var (
 	ErrMetadataMissing = errors.New("metadata not found in context")
