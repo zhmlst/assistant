@@ -2,7 +2,10 @@ module github.com/zhmlst/assistant/go
 
 go 1.26.1
 
-require github.com/jackc/pgx/v5 v5.8.0
+require (
+	github.com/confluentinc/confluent-kafka-go/v2 v2.14.0
+	github.com/jackc/pgx/v5 v5.8.0
+)
 
 require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect
