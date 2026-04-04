@@ -2,6 +2,15 @@ package lib
 
 import "fmt"
 
+type Role uint8
+
+const (
+	_ Role = iota
+	RoleAssistant
+	RoleSystem
+	RoleUser
+)
+
 type Hash [32]byte
 
 var NilHash Hash

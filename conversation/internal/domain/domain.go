@@ -72,20 +72,12 @@ func NewConversation(
 	}, nil
 }
 
-type Role uint8
-
-const (
-	_ Role = iota
-	RoleAssistant
-	RoleSystem
-	RoleUser
-)
 type Message struct {
 	ID             lib.Hash
 	ParentID       lib.Hash
 	ConversationID uuid.UUID
 	Text           string
-	Role           Role
+	Role        lib.Role
 	CreatedAt      time.Time
 }
 
@@ -97,7 +89,7 @@ func NewMessage(
 	parentID lib.Hash,
 	conversationID uuid.UUID,
 	text string,
-	role Role,
+	role lib.Role,
 ) (*Message, error) {
 	m := Message{
 		ParentID:       parentID,
