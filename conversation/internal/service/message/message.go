@@ -8,14 +8,19 @@ import (
 	"github.com/google/uuid"
 	"github.com/zhmlst/assistant/conversation/internal/domain"
 	"github.com/zhmlst/assistant/conversation/internal/service/conversation"
+	"github.com/zhmlst/assistant/go/lib"
 )
 
+type EventProvider interface {
+	CreateMessage(ctx context.Context, msg *domain.Message)
+}
+
 type Storage interface {
-	History(ctx context.Context, conversationID uuid.UUID, anchorID domain.Hash) iter.Seq2[*domain.Message, error]
-	Select(ctx context.Context, parentID, variantID domain.Hash, conversationID uuid.UUID) error
-	ByID(ctx context.Context, conversationID uuid.UUID, id domain.Hash) (*domain.Message, error)
+	History(ctx context.Context, conversationID uuid.UUID, anchorID lib.Hash) iter.Seq2[*domain.Message, error]
+	Select(ctx context.Context, parentID, variantID lib.Hash, conversationID uuid.UUID) error
+	ByID(ctx context.Context, conversationID uuid.UUID, id lib.Hash) (*domain.Message, error)
 	Store(ctx context.Context, msg *domain.Message) error
-	Delete(ctx context.Context, id domain.Hash) error
+	Delete(ctx context.Context, id lib.Hash) error
 }
 
 type service struct {
@@ -41,12 +46,12 @@ func New(
 
 func (s *service) CreateMessage(
 	ctx context.Context,
-	parentID domain.Hash,
+	parentID lib.Hash,
 	conversationID uuid.UUID,
-	role domain.Role,
+	role lib.Role,
 	text string,
 ) (*domain.Message, error) {
-	if parentID == domain.NilHash {
+	if parentID == lib.NilHash {
 		userID, err := s.userIDProvider.UserID(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("get user id: %w", err)
@@ -79,7 +84,7 @@ func (s *service) CreateMessage(
 
 func (s *service) DeleteMessage(
 	ctx context.Context,
-	id domain.Hash,
+	id lib.Hash,
 	conversationID uuid.UUID,
 ) error {
 	msg, err := s.storage.ByID(ctx, conversationID, id)
@@ -88,7 +93,7 @@ func (s *service) DeleteMessage(
 	}
 
 	return s.transactor.Wrap(ctx, func(ctx context.Context) error {
-		if msg.ParentID == domain.NilHash {
+		if msg.ParentID == lib.NilHash {
 			if err := s.conversationStorage.Delete(ctx, msg.ConversationID); err != nil {
 				return fmt.Errorf("delete conversation: %w", err)
 			}
@@ -102,7 +107,7 @@ func (s *service) DeleteMessage(
 	})
 }
 
-func (s *service) GetMessage(ctx context.Context, conversationID uuid.UUID, id domain.Hash) (*domain.Message, error) {
+func (s *service) GetMessage(ctx context.Context, conversationID uuid.UUID, id lib.Hash) (*domain.Message, error) {
 	msg, err := s.storage.ByID(ctx, conversationID, id)
 	if err != nil {
 		return nil, fmt.Errorf("restore message by id: %w", err)
@@ -110,13 +115,13 @@ func (s *service) GetMessage(ctx context.Context, conversationID uuid.UUID, id d
 	return msg, nil
 }
 
-func (s *service) SelectVariant(ctx context.Context, parentID, variantID domain.Hash, conversationID uuid.UUID) error {
+func (s *service) SelectVariant(ctx context.Context, parentID, variantID lib.Hash, conversationID uuid.UUID) error {
 	if err := s.storage.Select(ctx, parentID, variantID, conversationID); err != nil {
 		return fmt.Errorf("select variant: %w", err)
 	}
 	return nil
 }
 
-func (s *service) History(ctx context.Context, conversationID uuid.UUID, anchorID domain.Hash) iter.Seq2[*domain.Message, error] {
+func (s *service) History(ctx context.Context, conversationID uuid.UUID, anchorID lib.Hash) iter.Seq2[*domain.Message, error] {
 	return s.storage.History(ctx, conversationID, anchorID)
 }
