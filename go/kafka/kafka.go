@@ -9,20 +9,16 @@ import (
 
 const EventTypeKey = "event-type"
 
-type Event string
-
-type Topic string
-
 type Handler func(ctx context.Context, msg *kafka.Message) error
 
 type Consumer struct {
 	consumer *kafka.Consumer
-	routes map[Event]Handler
+	routes map[string]Handler
 }
 
 func New(
 	consumer *kafka.Consumer,
-	routes map[Event]Handler,
+	routes map[string]Handler,
 ) *Consumer {
 	return &Consumer{
 		consumer: consumer,
@@ -47,8 +43,8 @@ func (h *Consumer) Consume(ctx context.Context) error {
 		}
 
 		go func(msg *kafka.Message) {
-			event := Event(lookupHeader(msg.Headers, EventTypeKey))
-			handler, ok := h.routes[event]
+			event := lookupHeader(msg.Headers, EventTypeKey)
+			handler, ok := h.routes[string(event)]
 			if !ok {
 				return
 			}
