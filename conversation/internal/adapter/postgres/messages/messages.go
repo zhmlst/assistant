@@ -3,11 +3,13 @@ package messages
 import (
 	"context"
 	"fmt"
+	"iter"
+
 	"github.com/google/uuid"
 	adapter "github.com/zhmlst/assistant/conversation/internal/adapter/postgres"
 	"github.com/zhmlst/assistant/conversation/internal/domain"
+	"github.com/zhmlst/assistant/go/lib"
 	"github.com/zhmlst/assistant/go/postgres"
-	"iter"
 )
 
 type Messages struct {
@@ -38,7 +40,7 @@ func (m *Messages) Store(ctx context.Context, msg *domain.Message) error {
 	return nil
 }
 
-func (m *Messages) ByID(ctx context.Context, conversationID uuid.UUID, id domain.Hash) (*domain.Message, error) {
+func (m *Messages) ByID(ctx context.Context, conversationID uuid.UUID, id lib.Hash) (*domain.Message, error) {
 	var msg domain.Message
 
 	if err := m.pool.QueryRow(ctx, `
@@ -62,7 +64,7 @@ func (m *Messages) ByID(ctx context.Context, conversationID uuid.UUID, id domain
 	return &msg, nil
 }
 
-func (m *Messages) Delete(ctx context.Context, id domain.Hash) error {
+func (m *Messages) Delete(ctx context.Context, id lib.Hash) error {
 	_, err := m.pool.Exec(ctx, `
 		DELETE FROM messages
 		WHERE id = $1
@@ -76,7 +78,7 @@ func (m *Messages) Delete(ctx context.Context, id domain.Hash) error {
 	return nil
 }
 
-func (m *Messages) Select(ctx context.Context, parentID, variantID domain.Hash, conversation_id uuid.UUID) error {
+func (m *Messages) Select(ctx context.Context, parentID, variantID lib.Hash, conversation_id uuid.UUID) error {
 	_, err := m.pool.Exec(ctx, `
 		INSERT INTO forks (parent_message_id, selected_child_message_id, conversation_id)
 		VALUES ($1, $2, $3)
@@ -89,7 +91,7 @@ func (m *Messages) Select(ctx context.Context, parentID, variantID domain.Hash, 
 	return nil
 }
 
-func (m *Messages) History(ctx context.Context, conversationID uuid.UUID, anchorID domain.Hash) iter.Seq2[*domain.Message, error] {
+func (m *Messages) History(ctx context.Context, conversationID uuid.UUID, anchorID lib.Hash) iter.Seq2[*domain.Message, error] {
 	return func(yield func(*domain.Message, error) bool) {
 		rows, err := m.pool.Query(ctx, `
 			WITH RECURSIVE message_tree AS (

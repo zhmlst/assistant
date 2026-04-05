@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/zhmlst/assistant/go/lib"
 	"github.com/google/uuid"
+	"github.com/zhmlst/assistant/go/lib"
 )
 
 type UserFieldMask uint64
@@ -77,7 +77,7 @@ type Message struct {
 	ParentID       lib.Hash
 	ConversationID uuid.UUID
 	Text           string
-	Role        lib.Role
+	Role           lib.Role
 	CreatedAt      time.Time
 }
 

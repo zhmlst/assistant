@@ -7,8 +7,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/zhmlst/assistant/conversation/internal/domain"
-	v1 "github.com/zhmlst/assistant/conversation/internal/handler/v1"
 	conversationv1 "github.com/zhmlst/assistant/conversation/pkg/conversation/v1"
+	"github.com/zhmlst/assistant/go/lib"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -20,33 +20,33 @@ type service interface {
 	History(
 		ctx context.Context,
 		conversationID uuid.UUID,
-		anchorID domain.Hash,
+		anchorID lib.Hash,
 	) iter.Seq2[*domain.Message, error]
 
 	SelectVariant(
 		ctx context.Context,
-		parentID domain.Hash,
-		variantID domain.Hash,
+		parentID lib.Hash,
+		variantID lib.Hash,
 		conversationID uuid.UUID,
 	) error
 
 	GetMessage(
 		ctx context.Context,
 		conversationID uuid.UUID,
-		id domain.Hash,
+		id lib.Hash,
 	) (*domain.Message, error)
 
 	CreateMessage(
 		ctx context.Context,
-		parentID domain.Hash,
+		parentID lib.Hash,
 		conversationID uuid.UUID,
-		role domain.Role,
+		role lib.Role,
 		text string,
 	) (*domain.Message, error)
 
 	DeleteMessage(
 		ctx context.Context,
-		id domain.Hash,
+		id lib.Hash,
 		conversationID uuid.UUID,
 	) error
 }
@@ -70,7 +70,7 @@ func (h *handler) GetMessage(ctx context.Context, req *conversationv1.GetMessage
 		return nil, fmt.Errorf("conversation id from bytes: %w", err)
 	}
 
-	msgID, err := domain.HashFromBytes(req.Id)
+	msgID, err := lib.HashFromBytes(req.Id)
 	if err != nil {
 		return nil, fmt.Errorf("convert in bytes into hash: %w", err)
 	}
@@ -80,7 +80,7 @@ func (h *handler) GetMessage(ctx context.Context, req *conversationv1.GetMessage
 		return nil, err
 	}
 
-	role, err := v1.RoleToProto(msg.Role)
+	role, err := conversationv1.RoleToProto(msg.Role)
 	if err != nil {
 		return nil, fmt.Errorf("convert domain role to proto: %w", err)
 	}
@@ -113,14 +113,14 @@ func (h *handler) CreateMessage(
 		}
 	}
 
-	role, err := v1.RoleFromProto(req.Role)
+	role, err := conversationv1.RoleFromProto(req.Role)
 	if err != nil {
 		return nil, fmt.Errorf("invalid role: %w", err)
 	}
 
-	parentID := domain.NilHash
+	parentID := lib.NilHash
 	if len(req.ParentId) > 0 {
-		parentID, err = domain.HashFromBytes(req.ParentId)
+		parentID, err = lib.HashFromBytes(req.ParentId)
 		if err != nil {
 			return nil, fmt.Errorf("invalid parent id: %w", err)
 		}
@@ -137,7 +137,7 @@ func (h *handler) CreateMessage(
 		return nil, err
 	}
 
-	protoRole, err := v1.RoleToProto(msg.Role)
+	protoRole, err := conversationv1.RoleToProto(msg.Role)
 	if err != nil {
 		protoRole = conversationv1.Role_ROLE_UNSPECIFIED
 	}
@@ -158,7 +158,7 @@ func (h *handler) DeleteMessage(ctx context.Context, req *conversationv1.DeleteM
 		return nil, fmt.Errorf("convert conversation id to uuid: %w", err)
 	}
 
-	id, err := domain.HashFromBytes(req.Id)
+	id, err := lib.HashFromBytes(req.Id)
 	if err != nil {
 		return nil, fmt.Errorf("parse message id: %w", err)
 	}
@@ -176,7 +176,7 @@ func (h *handler) GetHistory(req *conversationv1.GetHistoryRequest, stream grpc.
 		return fmt.Errorf("conversation id from bytes: %w", err)
 	}
 
-	anchorID, err := domain.HashFromBytes(req.AnchorMessageId)
+	anchorID, err := lib.HashFromBytes(req.AnchorMessageId)
 	if err != nil {
 		return fmt.Errorf("anchor id from bytes: %w", err)
 	}
@@ -187,7 +187,7 @@ func (h *handler) GetHistory(req *conversationv1.GetHistoryRequest, stream grpc.
 			return fmt.Errorf("next message: %w", err)
 		}
 
-		role, err := v1.RoleToProto(msg.Role)
+		role, err := conversationv1.RoleToProto(msg.Role)
 		if err != nil {
 			return fmt.Errorf("convert role to proto: %w", err)
 		}
@@ -219,12 +219,12 @@ func (h *handler) SelectVariant(ctx context.Context, req *conversationv1.SelectV
 		return nil, fmt.Errorf("conversation id from bytes: %w", err)
 	}
 
-	parentID, err := domain.HashFromBytes(req.ParentMessageId)
+	parentID, err := lib.HashFromBytes(req.ParentMessageId)
 	if err != nil {
 		return nil, fmt.Errorf("parent id from bytes: %w", err)
 	}
 
-	variantID, err := domain.HashFromBytes(req.VariantMessageId)
+	variantID, err := lib.HashFromBytes(req.VariantMessageId)
 	if err != nil {
 		return nil, fmt.Errorf("variant id from bytes: %w", err)
 	}

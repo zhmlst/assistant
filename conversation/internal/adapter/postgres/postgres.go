@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/zhmlst/assistant/conversation/internal/domain"
+	"github.com/zhmlst/assistant/go/lib"
 )
 
-type Role domain.Role
+type Role lib.Role
 
 func (r *Role) Scan(src any) error {
 	val, ok := src.(int64)
@@ -23,11 +23,11 @@ func (r Role) Value() (driver.Value, error) {
 	return int64(r), nil
 }
 
-type Hash domain.Hash
+type Hash lib.Hash
 
 func (h *Hash) Scan(src any) error {
 	if src == nil {
-		*h = Hash(domain.NilHash)
+		*h = Hash(lib.NilHash)
 		return nil
 	}
 	val, ok := src.([]byte)
@@ -42,7 +42,7 @@ func (h *Hash) Scan(src any) error {
 }
 
 func (h Hash) Value() (driver.Value, error) {
-	if h == Hash(domain.NilHash) {
+	if h == Hash(lib.NilHash) {
 		return nil, nil
 	}
 	return h[:], nil
