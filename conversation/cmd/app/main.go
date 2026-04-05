@@ -14,7 +14,9 @@ import (
 	"time"
 
 	"github.com/caarlos0/env/v11"
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/jackc/pgx/v5/stdlib"
+	kafkapub "github.com/zhmlst/assistant/conversation/internal/adapter/kafka"
 	conversationstorage "github.com/zhmlst/assistant/conversation/internal/adapter/postgres/conversations"
 	messagestorage "github.com/zhmlst/assistant/conversation/internal/adapter/postgres/messages"
 	"github.com/zhmlst/assistant/conversation/internal/adapter/postgres/migrations"
@@ -80,6 +82,11 @@ func run() (cause error) {
 		return fmt.Errorf("migate db: %w", err)
 	}
 
+	producer, err := kafka.NewProducer(&kafka.ConfigMap{})
+	if err != nil {
+		return fmt.Errorf("kafka new producer: %w", err)
+	}
+
 	lgr := logger.New(&cfg.Logger)
 
 	userStorage := userstorage.New(pgpool)
@@ -88,7 +95,8 @@ func run() (cause error) {
 
 	userService := userservice.New(pgpool, userStorage)
 	conversationService := conversationservice.New(pgpool, conversationStorage)
-	messageService := messageservice.New(pgpool, messageStorage, v1.UserIDProvider{}, conversationStorage)
+	eventPublisher := kafkapub.New(producer)
+	messageService := messageservice.New(pgpool, messageStorage, v1.UserIDProvider{}, conversationStorage, eventPublisher)
 
 	userHandler := userhandler.New(userService)
 	conversationHandler := conversationhandler.New(conversationService)

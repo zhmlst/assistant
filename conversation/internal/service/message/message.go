@@ -11,8 +11,8 @@ import (
 	"github.com/zhmlst/assistant/go/lib"
 )
 
-type EventProvider interface {
-	CreateMessage(ctx context.Context, msg *domain.Message)
+type eventPublisher interface {
+	MessageCreated(ctx context.Context, msg *domain.Message) error
 }
 
 type Storage interface {
@@ -28,6 +28,7 @@ type service struct {
 	storage             Storage
 	conversationStorage conversation.Storage
 	userIDProvider      domain.UserIDProvider
+	eventPublisher eventPublisher
 }
 
 func New(
@@ -35,12 +36,14 @@ func New(
 	storage Storage,
 	userIDProvider domain.UserIDProvider,
 	conversationStorage conversation.Storage,
+	eventPublisher eventPublisher,
 ) *service {
 	return &service{
 		transactor:          transactor,
 		storage:             storage,
 		userIDProvider:      userIDProvider,
 		conversationStorage: conversationStorage,
+		eventPublisher: eventPublisher,
 	}
 }
 
@@ -74,9 +77,12 @@ func (s *service) CreateMessage(
 		return nil, err
 	}
 
-	err = s.storage.Store(ctx, msg)
-	if err != nil {
+	if err = s.storage.Store(ctx, msg); err != nil {
 		return nil, fmt.Errorf("store new message: %w", err)
+	}
+
+	if err := s.eventPublisher.MessageCreated(ctx, msg); err != nil {
+		return nil, fmt.Errorf("publish message created: %w", err)
 	}
 
 	return msg, nil
