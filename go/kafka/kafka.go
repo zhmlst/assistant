@@ -41,7 +41,7 @@ func (h *Consumer) Consume(ctx context.Context) error {
 					return ctx.Err()
 				}
 				continue
-			} else if !ok {
+			} else {
 				return err
 			}
 		}
