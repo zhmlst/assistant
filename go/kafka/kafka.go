@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/caarlos0/env/v11"
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 )
 
@@ -11,9 +12,26 @@ const EventTypeKey = "event-type"
 
 type Handler func(ctx context.Context, msg *kafka.Message) error
 
+type Config struct {
+	Brokers       string `env:"KAFKA_BROKERS" envDefault:"localhost:9092"`
+	ConsumerGroup string `env:"KAFKA_GROUP_ID"`
+}
+
+func NewConfig() (*kafka.ConfigMap, error) {
+	var cfg Config
+	if err := env.Parse(&cfg); err != nil {
+		return nil, err
+	}
+
+	return &kafka.ConfigMap{
+		"bootstrap.servers": cfg.Brokers,
+		"group.id":          cfg.ConsumerGroup,
+	}, nil
+}
+
 type Consumer struct {
 	consumer *kafka.Consumer
-	routes map[string]Handler
+	routes   map[string]Handler
 }
 
 func New(
@@ -22,7 +40,7 @@ func New(
 ) *Consumer {
 	return &Consumer{
 		consumer: consumer,
-		routes: routes,
+		routes:   routes,
 	}
 }
 

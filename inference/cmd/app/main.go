@@ -8,14 +8,18 @@ import (
 	"syscall"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
+	gokafka "github.com/zhmlst/assistant/go/kafka"
 	conversationv1 "github.com/zhmlst/assistant/conversation/pkg/conversation/v1"
 	kfkconversation "github.com/zhmlst/assistant/conversation/pkg/kafka"
-	kfk "github.com/zhmlst/assistant/go/kafka"
 	"github.com/zhmlst/assistant/inference/internal/adapter/conversation"
 	"github.com/zhmlst/assistant/inference/internal/handler"
 	"github.com/zhmlst/assistant/inference/internal/service"
 	"google.golang.org/grpc"
 )
+
+type Config struct {
+	Kafka gokafka.Config
+}
 
 func main() {
 	ctx, cancel := signal.NotifyContext(
@@ -25,10 +29,12 @@ func main() {
 	)
 	defer cancel()
 
-	c, err := kafka.NewConsumer(&kafka.ConfigMap{
-		"bootstrap.servers":"127.0.0.1:9092",
-		"group.id":"inference",
-	})
+	kafkaConfig, err := gokafka.NewConfig()
+	if err != nil {
+		return
+	}
+
+	c, err := kafka.NewConsumer(kafkaConfig)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		return
@@ -40,6 +46,9 @@ func main() {
 	}
 
 	conversationClientConn, err := grpc.NewClient("127.0.0.1:50050")
+	if err != nil {
+		return
+	}
 
 	messageServiceClient := conversationv1.NewMessageServiceClient(conversationClientConn)
 
@@ -49,7 +58,7 @@ func main() {
 
 	handler := handler.New(service)
 
-	consumer := kfk.New(c, map[string]kfk.Handler{
+	consumer := gokafka.New(c, map[string]gokafka.Handler{
 		kfkconversation.EventMessageCreated: handler.MessageCreated,
 	})
 
