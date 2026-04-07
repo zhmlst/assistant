@@ -16,7 +16,7 @@ import (
 type Conversation interface {
 	History(ctx context.Context, conversationID uuid.UUID, id lib.Hash) iter.Seq2[*domain.Message, error]
 	Prompt(ctx context.Context, conversationID uuid.UUID) (string, error)
-	CreateMessage(ctx context.Context, conversationID uuid.UUID, text string) error
+	CreateMessage(ctx context.Context, conversationID uuid.UUID, parentID lib.Hash, text string) error
 }
 
 type LLaMA interface {
@@ -84,7 +84,7 @@ func (s *Service) Reply(ctx context.Context, msg *domain.Message) error {
 		return fmt.Errorf("complete llama generation: %w", err)
 	}
 
-	if err := s.conversation.CreateMessage(ctx, msg.ConversationID, sb.String()); err != nil {
+	if err := s.conversation.CreateMessage(ctx, msg.ConversationID, msg.ID, sb.String()); err != nil {
 		return fmt.Errorf("create message: %w", err)
 	}
 

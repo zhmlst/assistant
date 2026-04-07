@@ -81,6 +81,17 @@ func (c *conversation) Prompt(ctx context.Context, conversationID uuid.UUID) (st
 	return "", nil
 }
 
-func (c *conversation) CreateMessage(ctx context.Context, conversationID uuid.UUID, text string) error {
-	return nil
+func (c *conversation) CreateMessage(
+	ctx context.Context,
+	conversationID uuid.UUID,
+	parentID lib.Hash,
+	text string,
+) error {
+	_, err := c.client.CreateMessage(ctx, &conversationv1.CreateMessageRequest{
+		ConversationId: conversationID[:],
+		ParentId:       parentID[:],
+		Role:           conversationv1.Role_ROLE_ASSISTANT,
+		Text:           text,
+	})
+	return err
 }
