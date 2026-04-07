@@ -8,9 +8,10 @@ import (
 	"syscall"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
-	kfk "github.com/zhmlst/assistant/go/kafka"
 	kfkconversation "github.com/zhmlst/assistant/conversation/pkg/kafka"
+	kfk "github.com/zhmlst/assistant/go/kafka"
 	"github.com/zhmlst/assistant/inference/internal/handler"
+	"github.com/zhmlst/assistant/inference/internal/service"
 )
 
 func main() {
@@ -35,7 +36,9 @@ func main() {
 		return
 	}
 
-	handler := handler.New(nil)
+	service := service.New()
+
+	handler := handler.New(service)
 
 	consumer := kfk.New(c, map[string]kfk.Handler{
 		kfkconversation.EventMessageCreated: handler.MessageCreated,
