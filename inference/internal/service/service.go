@@ -28,18 +28,38 @@ type Redis interface {
 	Writer(channel string) (io.WriteCloser, error)
 }
 
+type Config struct {
+	ContextSize     int
+	TokensPerByte   float64
+	SummarizePrompt string
+}
+
+func defaultConfig() *Config {
+	return &Config{
+		ContextSize:     4000,
+		TokensPerByte:   0.25,
+		SummarizePrompt: `summarize conversation`,
+	}
+}
+
 type Service struct {
+	config       Config
 	conversation Conversation
 	llama        LLaMA
 	redis        Redis
 }
 
 func New(
+	config *Config,
 	conversation Conversation,
 	llama LLaMA,
 	redis Redis,
 ) *Service {
+	if config == nil {
+		config = defaultConfig()
+	}
 	return &Service{
+		config:       *config,
 		conversation: conversation,
 		llama:        llama,
 		redis:        redis,
@@ -58,12 +78,6 @@ func (s *Service) Reply(ctx context.Context, msg *domain.Message) error {
 	return s.conversation.CreateMessage(ctx, msg.ConversationID, sb.String())
 }
 
-const (
-	tokPerByte      = 0.25
-	maxContextSize  = 4000
-	summarizePrompt = `summarize conversation`
-)
-
 func (s *Service) collectHistory(ctx context.Context, msg *domain.Message) []domain.Message {
 	var history []domain.Message
 	var contextSize int
@@ -79,10 +93,10 @@ func (s *Service) collectHistory(ctx context.Context, msg *domain.Message) []dom
 		}
 
 		history = append(history, *m)
-		contextSize += int(float64(len(m.Text)) * tokPerByte)
+		contextSize += int(float64(len(m.Text)) * s.config.TokensPerByte)
 
-		if contextSize >= maxContextSize {
-			return s.summarizeAndShorten(ctx, history, m.ID, maxContextSize/2)
+		if contextSize >= s.config.ContextSize {
+			return s.summarizeAndShorten(ctx, history, m.ID, s.config.ContextSize/2)
 		}
 	}
 
@@ -104,7 +118,7 @@ func (s *Service) summarizeAndShorten(
 	var current int
 
 	for i, h := range history {
-		current += int(float64(len(h.Text)) * tokPerByte)
+		current += int(float64(len(h.Text)) * s.config.TokensPerByte)
 		if current >= limit {
 			splitIdx = i
 			break
@@ -115,7 +129,7 @@ func (s *Service) summarizeAndShorten(
 	slices.Reverse(oldPart)
 
 	var sb strings.Builder
-	prompt := domain.Message{Role: lib.RoleSystem, Text: summarizePrompt}
+	prompt := domain.Message{Role: lib.RoleSystem, Text: s.config.SummarizePrompt}
 	_ = s.llama.Complete(ctx, append(oldPart, prompt), &sb)
 
 	summary := sb.String()
