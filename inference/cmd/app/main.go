@@ -21,7 +21,7 @@ type Config struct {
 	Kafka gokafka.Config
 }
 
-func main() {
+func run() error {
 	ctx, cancel := signal.NotifyContext(
 		context.Background(),
 		syscall.SIGINT,
@@ -31,23 +31,21 @@ func main() {
 
 	kafkaConfig, err := gokafka.NewConfig()
 	if err != nil {
-		return
+		return fmt.Errorf("gokafka new config: %w", err)
 	}
 
 	c, err := kafka.NewConsumer(kafkaConfig)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		return
+		return fmt.Errorf("kafka new consumer: %w", err)
 	}
 
 	if err := c.SubscribeTopics([]string{kfkconversation.TopicMessage}, nil); err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		return
+		return fmt.Errorf("subscribe topics: %w", err)
 	}
 
 	conversationClientConn, err := grpc.NewClient("127.0.0.1:50050")
 	if err != nil {
-		return
+		return fmt.Errorf("conversation new client conn: %w", err)
 	}
 
 	messageServiceClient := conversationv1.NewMessageServiceClient(conversationClientConn)
@@ -63,7 +61,15 @@ func main() {
 	})
 
 	if err := consumer.Consume(ctx); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func main() {
+	if err := run(); err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
-		return
+		os.Exit(1)
 	}
 }
