@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"iter"
 	"slices"
@@ -67,27 +68,44 @@ func New(
 }
 
 func (s *Service) Reply(ctx context.Context, msg *domain.Message) error {
-	history := s.collectHistory(ctx, msg)
+	history, err := s.collectHistory(ctx, msg)
+	if err != nil {
+		return fmt.Errorf("collect history: %w", err)
+	}
 
-	w, _ := s.redis.Writer(msg.ConversationID.String())
+	w, err := s.redis.Writer(msg.ConversationID.String())
+	if err != nil {
+		return fmt.Errorf("get redis writer: %w", err)
+	}
 	defer w.Close()
 
 	var sb strings.Builder
-	_ = s.llama.Complete(ctx, history, io.MultiWriter(w, &sb))
+	if err := s.llama.Complete(ctx, history, io.MultiWriter(w, &sb)); err != nil {
+		return fmt.Errorf("complete llama generation: %w", err)
+	}
 
-	return s.conversation.CreateMessage(ctx, msg.ConversationID, sb.String())
+	if err := s.conversation.CreateMessage(ctx, msg.ConversationID, sb.String()); err != nil {
+		return fmt.Errorf("create message: %w", err)
+	}
+
+	return nil
 }
 
-func (s *Service) collectHistory(ctx context.Context, msg *domain.Message) []domain.Message {
+func (s *Service) collectHistory(ctx context.Context, msg *domain.Message) ([]domain.Message, error) {
 	var history []domain.Message
 	var contextSize int
 
 	for m, err := range s.conversation.History(ctx, msg.ConversationID, msg.ID) {
 		if err != nil {
-			break
+			return nil, fmt.Errorf("iterate conversation history: %w", err)
 		}
 
-		if sum, _ := s.redis.Summary(m.ID); sum != "" {
+		sum, err := s.redis.Summary(m.ID)
+		if err != nil {
+			return nil, fmt.Errorf("get summary from redis: %w", err)
+		}
+
+		if sum != "" {
 			history = append(history, domain.Message{Role: lib.RoleSystem, Text: sum})
 			break
 		}
@@ -100,12 +118,17 @@ func (s *Service) collectHistory(ctx context.Context, msg *domain.Message) []dom
 		}
 	}
 
-	if prompt, _ := s.conversation.Prompt(ctx, msg.ConversationID); prompt != "" {
+	prompt, err := s.conversation.Prompt(ctx, msg.ConversationID)
+	if err != nil {
+		return nil, fmt.Errorf("get conversation prompt: %w", err)
+	}
+
+	if prompt != "" {
 		history = append(history, domain.Message{Role: lib.RoleSystem, Text: prompt})
 	}
 
 	slices.Reverse(history)
-	return history
+	return history, nil
 }
 
 func (s *Service) summarizeAndShorten(
@@ -113,7 +136,7 @@ func (s *Service) summarizeAndShorten(
 	history []domain.Message,
 	anchor lib.Hash,
 	limit int,
-) []domain.Message {
+) ([]domain.Message, error) {
 	var splitIdx int
 	var current int
 
@@ -130,12 +153,16 @@ func (s *Service) summarizeAndShorten(
 
 	var sb strings.Builder
 	prompt := domain.Message{Role: lib.RoleSystem, Text: s.config.SummarizePrompt}
-	_ = s.llama.Complete(ctx, append(oldPart, prompt), &sb)
+	if err := s.llama.Complete(ctx, append(oldPart, prompt), &sb); err != nil {
+		return nil, fmt.Errorf("complete summarization: %w", err)
+	}
 
 	summary := sb.String()
-	_ = s.redis.SetSummary(anchor, summary)
+	if err := s.redis.SetSummary(anchor, summary); err != nil {
+		return nil, fmt.Errorf("save summary to redis: %w", err)
+	}
 
 	result := append(history[:splitIdx], domain.Message{Role: lib.RoleSystem, Text: summary})
 	slices.Reverse(result)
-	return result
+	return result, nil
 }
