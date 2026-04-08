@@ -7,10 +7,11 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/caarlos0/env/v11"
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
-	gokafka "github.com/zhmlst/assistant/go/kafka"
 	conversationv1 "github.com/zhmlst/assistant/conversation/pkg/conversation/v1"
 	kfkconversation "github.com/zhmlst/assistant/conversation/pkg/kafka"
+	gokafka "github.com/zhmlst/assistant/go/kafka"
 	"github.com/zhmlst/assistant/inference/internal/adapter/conversation"
 	"github.com/zhmlst/assistant/inference/internal/handler"
 	"github.com/zhmlst/assistant/inference/internal/service"
@@ -18,7 +19,10 @@ import (
 )
 
 type Config struct {
-	Kafka gokafka.Config
+	Kafka gokafka.Config `envPrefix:"KAFKA_"`
+	GRPC  struct {
+		Addr string
+	} `envPrefix:"GRPC_"`
 }
 
 func run() error {
@@ -29,12 +33,14 @@ func run() error {
 	)
 	defer cancel()
 
-	kafkaConfig, err := gokafka.NewConfig()
+	config, err := env.ParseAsWithOptions[Config](env.Options{
+		UseFieldNameByDefault: true,
+	})
 	if err != nil {
-		return fmt.Errorf("gokafka new config: %w", err)
+		return fmt.Errorf("parse config from env: %w", err)
 	}
 
-	c, err := kafka.NewConsumer(kafkaConfig)
+	c, err := kafka.NewConsumer(config.Kafka.Map())
 	if err != nil {
 		return fmt.Errorf("kafka new consumer: %w", err)
 	}
@@ -43,7 +49,7 @@ func run() error {
 		return fmt.Errorf("subscribe topics: %w", err)
 	}
 
-	conversationClientConn, err := grpc.NewClient("127.0.0.1:50050")
+	conversationClientConn, err := grpc.NewClient(config.GRPC.Addr)
 	if err != nil {
 		return fmt.Errorf("conversation new client conn: %w", err)
 	}
