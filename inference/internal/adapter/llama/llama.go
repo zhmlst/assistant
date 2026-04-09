@@ -75,10 +75,14 @@ type CompletionChunk struct {
 	} `json:"choices"`
 }
 
-func readCompletion(dst io.Writer, src io.Reader) error {
+func readCompletion(ctx context.Context, dst io.Writer, src io.Reader) error {
 	reader := bufio.NewReader(src)
 
 	for {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+
 		line, err := reader.ReadBytes('\n')
 		if err != nil {
 			if errors.Is(err, io.EOF) {
@@ -150,5 +154,5 @@ func (l *llama) Complete(ctx context.Context, history []domain.Message, dst io.W
 		return fmt.Errorf(res.Status)
 	}
 
-	return readCompletion(dst, res.Body)
+	return readCompletion(ctx, dst, res.Body)
 }
