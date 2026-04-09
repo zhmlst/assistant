@@ -13,6 +13,7 @@ import (
 	kfkconversation "github.com/zhmlst/assistant/conversation/pkg/kafka"
 	gokafka "github.com/zhmlst/assistant/go/kafka"
 	"github.com/zhmlst/assistant/inference/internal/adapter/conversation"
+	"github.com/zhmlst/assistant/inference/internal/adapter/llama"
 	"github.com/zhmlst/assistant/inference/internal/handler"
 	"github.com/zhmlst/assistant/inference/internal/service"
 	"google.golang.org/grpc"
@@ -24,6 +25,7 @@ type Config struct {
 		Addr string
 	} `envPrefix:"GRPC_"`
 	Service service.Config `envPrefix:"SERVICE_"`
+	LLaMA llama.Config `envPrefix:"LLAMA_"`
 }
 
 func run() error {
@@ -59,7 +61,9 @@ func run() error {
 
 	cnv := conversation.New(messageServiceClient)
 
-	service := service.New(&config.Service, cnv, nil, nil)
+	llama := llama.New(&config.LLaMA)
+
+	service := service.New(&config.Service, cnv, llama, nil)
 
 	handler := handler.New(service)
 
