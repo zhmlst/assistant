@@ -78,7 +78,20 @@ func (c *conversation) History(
 }
 
 func (c *conversation) Prompt(ctx context.Context, conversationID uuid.UUID) (string, error) {
-	return "", nil
+	list, err := c.client.ListMessages(ctx, &conversationv1.ListMessagesRequest{
+		ConversationId: conversationID[:],
+		PageSize:       1,
+		Filter:         `parent_id == null`,
+	})
+	if err != nil {
+		return "", fmt.Errorf("list messages: %w", err)
+	}
+
+	if len(list.Messages) < 1 {
+		return "", nil
+	}
+
+	return list.Messages[0].Text, nil
 }
 
 func (c *conversation) CreateMessage(
