@@ -23,6 +23,7 @@ type Config struct {
 	GRPC  struct {
 		Addr string
 	} `envPrefix:"GRPC_"`
+	Service service.Config `envPrefix:"SERVICE_"`
 }
 
 func run() error {
@@ -58,7 +59,7 @@ func run() error {
 
 	cnv := conversation.New(messageServiceClient)
 
-	service := service.New(nil, cnv, nil, nil)
+	service := service.New(&config.Service, cnv, nil, nil)
 
 	handler := handler.New(service)
 
