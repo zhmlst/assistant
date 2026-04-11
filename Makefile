@@ -4,7 +4,7 @@ export
 DOCKER ?= $(shell command -v podman 2> /dev/null || echo docker)
 
 .PHONY: up
-up: conversation
+up: conversation inference
 	$(DOCKER) compose up -d
 
 down:
@@ -13,3 +13,7 @@ down:
 .PHONY: conversation
 conversation:
 	make -C conversation
+
+.PHONY: inference
+inference:
+	make -C inference
