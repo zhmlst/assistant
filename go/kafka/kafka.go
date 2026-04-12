@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
@@ -10,6 +11,11 @@ import (
 const EventTypeKey = "event-type"
 
 type Handler func(ctx context.Context, msg *kafka.Message) error
+
+func NopHandler(ctx context.Context, msg *kafka.Message) error {
+	fmt.Println(msg)
+	return nil
+}
 
 type Config struct {
 	Brokers string
@@ -24,24 +30,31 @@ func (c *Config) Map() *kafka.ConfigMap {
 }
 
 type Consumer struct {
-	consumer     *kafka.Consumer
-	routes       map[string]Handler
+	Base         *kafka.Consumer
+	Routes       map[string]Handler
 	ErrorHandler func(msg *kafka.Message, err error)
 }
 
-func New(
-	consumer *kafka.Consumer,
-	routes map[string]Handler,
-) *Consumer {
-	return &Consumer{
-		consumer: consumer,
-		routes:   routes,
+func (h *Consumer) Consume(ctx context.Context) (err error) {
+	if h.Base == nil {
+		h.Base, err = kafka.NewConsumer(&kafka.ConfigMap{
+			"bootstrap.servers": "127.0.0.1:9092",
+		})
+		if err != nil {
+			return err
+		}
 	}
-}
 
-func (h *Consumer) Consume(ctx context.Context) error {
+	if len(h.Routes) == 0 {
+		h.Routes = map[string]Handler{"": NopHandler}
+	}
+
+	if noph := h.Routes[""]; noph == nil {
+		h.Routes[""] = NopHandler
+	}
+
 	for {
-		msg, err := h.consumer.ReadMessage(500 * time.Millisecond)
+		msg, err := h.Base.ReadMessage(500 * time.Millisecond)
 		if err != nil {
 			if kerr, ok := err.(kafka.Error); ok &&
 				kerr.Code() == kafka.ErrTimedOut ||
@@ -57,9 +70,9 @@ func (h *Consumer) Consume(ctx context.Context) error {
 
 		go func(msg *kafka.Message) {
 			event := lookupHeader(msg.Headers, EventTypeKey)
-			handler, ok := h.routes[string(event)]
+			handler, ok := h.Routes[string(event)]
 			if !ok {
-				return
+				handler = h.Routes[""]
 			}
 
 			if err = handler(ctx, msg); h.ErrorHandler != nil && err != nil {
