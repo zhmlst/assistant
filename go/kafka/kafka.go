@@ -24,8 +24,9 @@ func (c *Config) Map() *kafka.ConfigMap {
 }
 
 type Consumer struct {
-	consumer *kafka.Consumer
-	routes   map[string]Handler
+	consumer     *kafka.Consumer
+	routes       map[string]Handler
+	ErrorHandler func(msg *kafka.Message, err error)
 }
 
 func New(
@@ -60,7 +61,10 @@ func (h *Consumer) Consume(ctx context.Context) error {
 			if !ok {
 				return
 			}
-			_ = handler(ctx, msg)
+
+			if err = handler(ctx, msg); h.ErrorHandler != nil && err != nil {
+				h.ErrorHandler(msg, err)
+			}
 		}(msg)
 	}
 }
