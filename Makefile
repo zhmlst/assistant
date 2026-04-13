@@ -17,3 +17,13 @@ conversation:
 .PHONY: inference
 inference:
 	make -C inference
+
+.PHONY: install
+install: all
+	mkdir -p /opt/assistant
+	cp -r . /opt/assistant
+	cp assistant.service /etc/systemd/system/
+
+.PHONY: uninstall
+uninstall:
+	rm -f /etc/systemd/system/assistant.service
