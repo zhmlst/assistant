@@ -1,4 +1,4 @@
-FROM docker.io/library/golang:1.26-alpine AS builder
+FROM docker.io/library/golang:1.26-bookworm AS builder
 
 WORKDIR /src
 
@@ -12,7 +12,9 @@ WORKDIR /src
 COPY . .
 
 WORKDIR /src/conversation
-RUN CGO_ENABLED=0 GOOS=linux go build -o /app ./cmd/app
+RUN CGO_ENABLED=1 GOOS=linux go build \
+    -ldflags "-linkmode external -extldflags '-static'" \
+    -o /app ./cmd/app
 
 FROM alpine:latest
 WORKDIR /root/
