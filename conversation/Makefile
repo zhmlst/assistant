@@ -1,9 +1,6 @@
 include .env
 export
 
-.env: env.example
-	cp env.example .env
-
 DOCKER ?= $(shell command -v podman 2> /dev/null || echo docker)
 
 GOPATH := $(shell go env GOPATH)
@@ -11,6 +8,9 @@ export PATH := $(GOPATH)/bin:$(PATH)
 
 .PHONY: all
 all: image
+
+.env: env.example
+	cp env.example .env
 
 $(GOPATH)/bin/stringer:
 	go install golang.org/x/tools/cmd/stringer@latest
