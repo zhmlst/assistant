@@ -6,6 +6,7 @@ replace github.com/zhmlst/assistant/go => ../go
 
 require (
 	github.com/caarlos0/env/v11 v11.4.0
+	github.com/confluentinc/confluent-kafka-go/v2 v2.14.0
 	github.com/docker/go-connections v0.6.0
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.8.0

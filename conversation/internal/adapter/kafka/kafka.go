@@ -5,10 +5,10 @@ import (
 	"fmt"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
-	pkgkafka "github.com/zhmlst/assistant/conversation/pkg/kafka"
-	gokafka "github.com/zhmlst/assistant/go/kafka"
 	"github.com/zhmlst/assistant/conversation/internal/domain"
 	conversationv1 "github.com/zhmlst/assistant/conversation/pkg/conversation/v1"
+	pkgkafka "github.com/zhmlst/assistant/conversation/pkg/kafka"
+	gokafka "github.com/zhmlst/assistant/go/kafka"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -43,7 +43,7 @@ func (p *eventPublisher) MessageCreated(ctx context.Context, msg *domain.Message
 			Topic:     new(pkgkafka.TopicMessage),
 			Partition: kafka.PartitionAny,
 		},
-		Key:     msg.ID[:],
+		Key: msg.ID[:],
 		Headers: []kafka.Header{
 			{Key: gokafka.EventTypeKey, Value: []byte(pkgkafka.EventMessageCreated)},
 		},

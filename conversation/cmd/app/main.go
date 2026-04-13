@@ -29,6 +29,7 @@ import (
 	messageservice "github.com/zhmlst/assistant/conversation/internal/service/message"
 	userservice "github.com/zhmlst/assistant/conversation/internal/service/user"
 	conversationv1 "github.com/zhmlst/assistant/conversation/pkg/conversation/v1"
+	gokafka "github.com/zhmlst/assistant/go/kafka"
 	"github.com/zhmlst/assistant/go/logger"
 	"github.com/zhmlst/assistant/go/postgres"
 	"google.golang.org/grpc"
@@ -39,6 +40,7 @@ import (
 
 type Config struct {
 	Postgres postgres.Config `envPrefix:"POSTGRES_"`
+	Kafka    gokafka.Config  `envPrefix:"KAFKA_"`
 	Logger   logger.Config   `envPrefix:"LOGGER_"`
 	GRPC     struct {
 		Addr string
@@ -82,7 +84,7 @@ func run() (cause error) {
 		return fmt.Errorf("migate db: %w", err)
 	}
 
-	producer, err := kafka.NewProducer(&kafka.ConfigMap{})
+	producer, err := kafka.NewProducer(cfg.Kafka.Map())
 	if err != nil {
 		return fmt.Errorf("kafka new producer: %w", err)
 	}

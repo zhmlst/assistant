@@ -32,7 +32,7 @@ func (h *Handler) MessageCreated(ctx context.Context, msg *kafka.Message) error 
 		return fmt.Errorf("unmarshal message: %w", err)
 	}
 
-	cnvID, err := uuid.FromBytes(protomsg.Id)
+	cnvID, err := uuid.FromBytes(protomsg.ConversationId)
 	if err != nil {
 		return fmt.Errorf("conversation id from bytes: %w", err)
 	}

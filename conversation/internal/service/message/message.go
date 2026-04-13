@@ -28,7 +28,7 @@ type service struct {
 	storage             Storage
 	conversationStorage conversation.Storage
 	userIDProvider      domain.UserIDProvider
-	eventPublisher eventPublisher
+	eventPublisher      eventPublisher
 }
 
 func New(
@@ -43,7 +43,7 @@ func New(
 		storage:             storage,
 		userIDProvider:      userIDProvider,
 		conversationStorage: conversationStorage,
-		eventPublisher: eventPublisher,
+		eventPublisher:      eventPublisher,
 	}
 }
 

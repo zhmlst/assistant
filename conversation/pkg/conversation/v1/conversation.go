@@ -31,4 +31,3 @@ func RoleToProto(r lib.Role) (Role, error) {
 		return Role_ROLE_UNSPECIFIED, fmt.Errorf("invalid domain role %v", r)
 	}
 }
-

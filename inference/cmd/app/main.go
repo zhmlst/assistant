@@ -17,6 +17,7 @@ import (
 	"github.com/zhmlst/assistant/inference/internal/handler"
 	"github.com/zhmlst/assistant/inference/internal/service"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type Config struct {
@@ -25,7 +26,7 @@ type Config struct {
 		Addr string
 	} `envPrefix:"GRPC_"`
 	Service service.Config `envPrefix:"SERVICE_"`
-	LLaMA llama.Config `envPrefix:"LLAMA_"`
+	LLaMA   llama.Config   `envPrefix:"LLAMA_"`
 }
 
 func run() error {
@@ -52,7 +53,10 @@ func run() error {
 		return fmt.Errorf("subscribe topics: %w", err)
 	}
 
-	conversationClientConn, err := grpc.NewClient(config.GRPC.Addr)
+	conversationClientConn, err := grpc.NewClient(
+		config.GRPC.Addr,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
 	if err != nil {
 		return fmt.Errorf("conversation new client conn: %w", err)
 	}
@@ -67,9 +71,16 @@ func run() error {
 
 	handler := handler.New(service)
 
-	consumer := gokafka.New(c, map[string]gokafka.Handler{
-		kfkconversation.EventMessageCreated: handler.MessageCreated,
-	})
+	consumer := gokafka.Consumer{
+		Base: c,
+		Routes: map[string]gokafka.Handler{
+			kfkconversation.EventMessageCreated: handler.MessageCreated,
+		},
+	}
+
+	consumer.ErrorHandler = func(msg *kafka.Message, err error) {
+		fmt.Println(err.Error())
+	}
 
 	if err := consumer.Consume(ctx); err != nil {
 		return err
