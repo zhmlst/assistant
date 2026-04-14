@@ -13,9 +13,11 @@ COPY . .
 
 WORKDIR /src/inference
 
-RUN CGO_ENABLED=1 GOOS=linux go build \
-    -ldflags "-linkmode external -extldflags '-static'" \
-    -o /app ./cmd/app
+RUN --mount=type=cache,target=/root/.cache/go-build \
+	--mount=type=cache,target=/go/pkg/mod \
+	CGO_ENABLED=1 GOOS=linux go build \
+	-ldflags "-linkmode external -extldflags '-static'" \
+	-o /app ./cmd/app
 
 FROM alpine:latest
 WORKDIR /root/
