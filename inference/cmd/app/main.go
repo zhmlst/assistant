@@ -25,8 +25,9 @@ type Config struct {
 	GRPC  struct {
 		Addr string
 	} `envPrefix:"GRPC_"`
-	Service service.Config `envPrefix:"SERVICE_"`
-	LLaMA   llama.Config   `envPrefix:"LLAMA_"`
+	ConversationAddr string
+	Service          service.Config `envPrefix:"SERVICE_"`
+	LLaMA            llama.Config   `envPrefix:"LLAMA_"`
 }
 
 func run() error {
@@ -54,7 +55,7 @@ func run() error {
 	}
 
 	conversationClientConn, err := grpc.NewClient(
-		config.GRPC.Addr,
+		config.ConversationAddr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {

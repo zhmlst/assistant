@@ -43,6 +43,7 @@ services:
       context: .
       dockerfile: ./inference/Dockerfile
     environment:
+      CONVERSATION_ADDR: conversation:50050
       KAFKA_BROKERS: kafka:9092
       KAFKA_GROUP_ID: inference
     depends_on:
