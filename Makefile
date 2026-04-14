@@ -8,7 +8,11 @@ all: conversation inference
 
 .PHONY: up
 up: conversation inference
-	$(DOCKER) compose up -d
+	$(DOCKER) compose up -d --build
+
+.PHONY: run
+run: conversation inference
+	$(DOCKER) compose up --build
 
 .PHONY: down
 down:
