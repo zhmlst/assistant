@@ -14,6 +14,7 @@ import (
 	gokafka "github.com/zhmlst/assistant/go/kafka"
 	"github.com/zhmlst/assistant/inference/internal/adapter/conversation"
 	"github.com/zhmlst/assistant/inference/internal/adapter/llama"
+	"github.com/zhmlst/assistant/inference/internal/adapter/redis"
 	"github.com/zhmlst/assistant/inference/internal/handler"
 	"github.com/zhmlst/assistant/inference/internal/service"
 	"google.golang.org/grpc"
@@ -68,7 +69,9 @@ func run() error {
 
 	llama := llama.New(&config.LLaMA)
 
-	service := service.New(&config.Service, cnv, llama, nil)
+	rds := redis.New()
+
+	service := service.New(&config.Service, cnv, llama, rds)
 
 	handler := handler.New(service)
 
