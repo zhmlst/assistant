@@ -1,30 +1,33 @@
-include .env
-export
-
-DOCKER ?= $(shell command -v podman 2> /dev/null || echo docker)
+include common.mk
 
 .PHONY: all
-all: conversation inference
+all: gen
+
+$(GOPATH)/bin/buf:
+	go install github.com/bufbuild/buf/cmd/buf@latest
+
+$(GOPATH)/bin/protoc-gen-go:
+	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+
+$(GOPATH)/bin/protoc-gen-go-grpc:
+	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
+.PHONY: gen
+gen: $(GOPATH)/bin/buf $(GOPATH)/bin/protoc-gen-go $(GOPATH)/bin/protoc-gen-go-grpc
+	buf generate
+	$(MAKE) -C conversation gen
 
 .PHONY: up
-up: conversation inference
-	$(DOCKER) compose up -d --build
+up: all
+	$(DOCKER) compose up --build -d
 
 .PHONY: run
-run: conversation inference
+run: all
 	$(DOCKER) compose up --build
 
 .PHONY: down
 down:
 	$(DOCKER) compose down
-
-.PHONY: conversation
-conversation:
-	make -C conversation
-
-.PHONY: inference
-inference:
-	make -C inference
 
 .PHONY: install
 install: all
@@ -34,4 +37,5 @@ install: all
 
 .PHONY: uninstall
 uninstall:
+	systemctl disable --now assistant.service
 	rm -f /etc/systemd/system/assistant.service
