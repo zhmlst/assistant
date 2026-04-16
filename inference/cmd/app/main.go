@@ -12,6 +12,7 @@ import (
 	conversationv1 "github.com/zhmlst/assistant/conversation/pkg/conversation/v1"
 	kfkconversation "github.com/zhmlst/assistant/conversation/pkg/kafka"
 	gokafka "github.com/zhmlst/assistant/go/kafka"
+	"github.com/zhmlst/assistant/go/logger"
 	"github.com/zhmlst/assistant/inference/internal/adapter/conversation"
 	"github.com/zhmlst/assistant/inference/internal/adapter/llama"
 	"github.com/zhmlst/assistant/inference/internal/adapter/redis"
@@ -22,6 +23,7 @@ import (
 )
 
 type Config struct {
+	Logger logger.Config `envPrefix:"LOGGER_"`
 	Kafka gokafka.Config `envPrefix:"KAFKA_"`
 	GRPC  struct {
 		Addr string
@@ -45,6 +47,8 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("parse config from env: %w", err)
 	}
+
+	lgr := logger.New(&config.Logger)
 
 	c, err := kafka.NewConsumer(config.Kafka.Map())
 	if err != nil {
@@ -86,10 +90,22 @@ func run() error {
 		fmt.Println(err.Error())
 	}
 
-	if err := consumer.Consume(ctx); err != nil {
+	errCh := make(chan error, 1)
+	go func() {
+		if err := consumer.Consume(ctx); err != nil {
+			errCh <- err
+		}
+	}()
+
+	lgr.Info("launched")
+
+	select {
+	case <-ctx.Done():
+	case err := <-errCh:
 		return err
 	}
 
+	lgr.Info("terminated")
 	return nil
 }
 
