@@ -2,6 +2,7 @@ package v1
 
 import (
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -11,9 +12,30 @@ import (
 	"github.com/zhmlst/assistant/go/lib"
 )
 
+type Hash lib.Hash
+
+func (h *Hash) UnmarshalJSON(data []byte) error {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	}
+
+	decoded, err := hex.DecodeString(s)
+	if err != nil {
+		return err
+	}
+
+	*h = Hash(decoded)
+	return nil
+}
+
+func (h Hash) MarshalJSON() ([]byte, error) {
+	return json.Marshal(hex.EncodeToString(h[:]))
+}
+
 type Message struct {
 	ConversationID  uuid.UUID `json:"conversation_id"`
-	ParentMessageID lib.Hash  `json:"parent_message_id"`
+	ParentMessageID Hash      `json:"parent_message_id"`
 	Role            lib.Role  `json:"role"`
 	Text            string    `json:"text"`
 }
@@ -53,7 +75,7 @@ func (h *handler) CreateMessage(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewDecoder(r.Body).Decode(&msg); err != nil {
 		h.handleError(w, fmt.Errorf("decode request: %w", err))
 	}
-	
+
 	if err := h.conversation.CreateMessage(r.Context(), &msg); err != nil {
 		h.handleError(w, err)
 	}
