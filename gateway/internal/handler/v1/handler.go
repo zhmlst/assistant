@@ -33,8 +33,48 @@ func (h Hash) MarshalJSON() ([]byte, error) {
 	return json.Marshal(hex.EncodeToString(h[:]))
 }
 
+type Role lib.Role
+
+func (r Role) String() string {
+	switch lib.Role(r) {
+	case lib.RoleAssistant:
+		return "assistant"
+	case lib.RoleSystem:
+		return "assistant"
+	case lib.RoleUser:
+		return "user"
+	default:
+		panic("unknown role")
+	}
+}
+
+func (r Role) MarshalJSON() ([]byte, error) {
+	return json.Marshal(r.String())
+}
+
+func (r *Role) UnmarshalJSON(data []byte) error {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	}
+
+	switch s {
+	case "assistant":
+		*r = Role(lib.RoleAssistant)
+	case "system":
+		*r = Role(lib.RoleSystem)
+	case "user":
+		*r = Role(lib.RoleUser)
+	default:
+		return fmt.Errorf("unknown role: %s", s)
+	}
+
+	return nil
+}
+
 type Message struct {
 	ConversationID  uuid.UUID `json:"conversation_id"`
+	ID              Hash      `json:"hash"`
 	ParentMessageID Hash      `json:"parent_message_id"`
 	Role            lib.Role  `json:"role"`
 	Text            string    `json:"text"`
