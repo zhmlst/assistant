@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 
@@ -82,15 +83,22 @@ type Message struct {
 
 type Conversation interface {
 	CreateMessage(ctx context.Context, msg *Message) error
+	ChildMessage(ctx context.Context, conversationID uuid.UUID, parentID lib.Hash) (*Message, error)
+}
+
+type Redis interface {
+	Subscribe(ctx context.Context, id lib.Hash) (<-chan string, io.Closer, error)
 }
 
 type handler struct {
 	conversation Conversation
+	redis        Redis
 }
 
-func New(conversation Conversation) *handler {
+func New(conversation Conversation, redis Redis) *handler {
 	return &handler{
 		conversation: conversation,
+		redis:        redis,
 	}
 }
 
@@ -114,13 +122,53 @@ func (h *handler) CreateMessage(w http.ResponseWriter, r *http.Request) {
 	var msg Message
 	if err := json.NewDecoder(r.Body).Decode(&msg); err != nil {
 		h.handleError(w, fmt.Errorf("decode request: %w", err))
+		return
 	}
 
 	if err := h.conversation.CreateMessage(r.Context(), &msg); err != nil {
 		h.handleError(w, err)
+		return
 	}
 
-	if err := json.NewEncoder(w).Encode(&msg); err != nil {
-		h.handleError(w, fmt.Errorf("encode response: %w", err))
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+
+	flusher := w.(http.Flusher)
+
+	data, _ := json.Marshal(msg)
+	fmt.Fprintf(w, "data: %s\n\n", string(data))
+	if flusher != nil {
+		flusher.Flush()
+	}
+
+	if msg.Role != lib.RoleUser {
+		return
+	}
+
+	ch, closer, err := h.redis.Subscribe(r.Context(), lib.Hash(msg.ID))
+	if err != nil {
+		h.handleError(w, fmt.Errorf("redis subscribe: %w", err))
+		return
+	}
+	defer closer.Close()
+
+	for chunk := range ch {
+		fmt.Fprintf(w, "data: %s\n\n", chunk)
+		if flusher != nil {
+			flusher.Flush()
+		}
+	}
+
+	reply, err := h.conversation.ChildMessage(r.Context(), msg.ConversationID, lib.Hash(msg.ID))
+	if err != nil {
+		return
+	}
+
+	replyData, _ := json.Marshal(reply)
+	fmt.Fprintf(w, "data: %s\n\n", string(replyData))
+	if flusher != nil {
+		flusher.Flush()
 	}
 }
+
