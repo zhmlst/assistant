@@ -102,6 +102,12 @@ func New(conversation Conversation, redis Redis) *handler {
 	}
 }
 
+func (h *handler) Router() http.Handler {
+	r := http.NewServeMux()
+	r.HandleFunc("POST /v1/messages", h.CreateMessage)
+	return r
+}
+
 func (h *handler) handleError(w http.ResponseWriter, err error) {
 	type Error struct {
 		Error string `json:"error"`
