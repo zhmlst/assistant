@@ -23,6 +23,7 @@ type Config struct {
 	ShutdownTimeout  time.Duration
 	Logger           logger.Config `envPrefix:"LOGGER_"`
 	ConversationAddr string
+	HTTP             http.Server `envPrefix:"HTTP_"`
 }
 
 func run() error {
@@ -38,7 +39,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	
+
 	lgr := logger.New(&config.Logger)
 
 	conn, err := grpc.NewClient(
@@ -55,7 +56,8 @@ func run() error {
 
 	_ = handlerv1
 
-	server := http.Server{}
+	server := &config.HTTP
+	server.Handler = handlerv1.Router()
 
 	go func() {
 		if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
