@@ -5,11 +5,15 @@ import (
 	"os"
 
 	"github.com/caarlos0/env/v11"
+	"github.com/zhmlst/assistant/gateway/internal/adapter/conversation"
+	v1 "github.com/zhmlst/assistant/gateway/internal/handler/v1"
 	"github.com/zhmlst/assistant/go/logger"
+	"google.golang.org/grpc"
 )
 
 type Config struct {
-	Logger logger.Config `envPrefix:"LOGGER_"`
+	Logger           logger.Config `envPrefix:"LOGGER_"`
+	ConversationAddr string
 }
 
 func run() error {
@@ -19,6 +23,17 @@ func run() error {
 	if err != nil {
 		return err
 	}
+
+	conn, err := grpc.NewClient(config.ConversationAddr)
+	if err != nil {
+		return fmt.Errorf("grpc new client: %w", err)
+	}
+
+	conversationClient := conversation.New(conn)
+
+	handlerv1 := v1.New(conversationClient, nil)
+
+	_ = handlerv1
 
 	lgr := logger.New(&config.Logger)
 
