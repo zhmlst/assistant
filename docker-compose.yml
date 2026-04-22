@@ -21,6 +21,11 @@ services:
         condition: service_healthy
       kafka-setup:
         condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "grpc_health_probe -addr=:50050"] 
+      interval: 10s
+      timeout: 10s
+      retries: 5
 
   postgres:
     image: docker.io/library/postgres:17-alpine
@@ -51,6 +56,16 @@ services:
         condition: service_healthy
       kafka-setup:
         condition: service_completed_successfully
+
+  gateway:
+    build:
+      context: .
+      dockerfile: ./gateway/Dockerfile
+    environment:
+      CONVERSATION_ADDR: conversation:50050
+    depends_on:
+      conversation:
+        condition: service_healthy
 
   kafka:
     image: docker.io/apache/kafka:latest
